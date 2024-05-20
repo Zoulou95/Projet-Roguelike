@@ -12,6 +12,8 @@
 #define RIGHT 1
 #define TOP 2
 #define BOTTOM 3
+#define SPAWN_X 0
+#define SPAWN_Y 0
 #define CHECK 10
 
 typedef struct{ // structure for coordinates

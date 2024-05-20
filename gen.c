@@ -8,7 +8,7 @@ int isSpaceAvailable(MAP *map, ROOM *new_room){
               new_room->co_room.x >= existingRoom.co_room.x + existingRoom.width || 
               new_room->co_room.y + new_room->height <= existingRoom.co_room.y || 
               new_room->co_room.y >= existingRoom.co_room.y + existingRoom.height)){
-            free(new_room); // void the new room (MODIF) marche peut-être pas (ne vide pas)
+            free(new_room); // purge the new_room since it failed
             map->nb_rooms--; // total numbers of rooms -1
             return 0; // false
         }
@@ -85,22 +85,25 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     default:
         break;
     }
-    map->room[map->nb_rooms-1]=*new_room; // AJOUTER NOUVELLE ROOM DANS MAP OU LE FAIRE DANS LA FONCTION createLeftDoor (MODIF)
-    return &new_room; // modif ça ?
+    map->room[map->nb_rooms-1]=*new_room;
+    return new_room;
 }
 
 int numberOfDoors(MAP *map){ // probability to create a new door
     switch (map->max_room-map->nb_rooms){
+    case 0:
+        return 0;
+        break;
     case 1:
         return rand()%2;
         break;
     case 2:
         return rand()%3;
     default:
-        if(map->nb_rooms<=(map->max_room)/4){
+        if(map->nb_rooms<=(map->max_room)/3){
             return 2+rand()%2;
         }
-        else if((map->nb_rooms<=(map->max_room)/2)&&(map->nb_rooms>(map->max_room)/4)){
+        else if((map->nb_rooms<=(map->max_room)/2)&&(map->nb_rooms>(map->max_room)/3)){
             return 1+rand()%3;
         }
         else{
@@ -113,18 +116,62 @@ int numberOfDoors(MAP *map){ // probability to create a new door
 int createLeftDoor(MAP *map, ROOM *room){
     room->door[LEFT].co_door.x=room->co_room.x;
     room->door[LEFT].co_door.y=room->co_room.y+1+rand()%(room->height-2);
-    room->doors++;
     ROOM *new_room;
     for(int i=0; i<CHECK; i++){
-        new_room=createRoom(&map, &room, 'l');
-        if(isSpaceAvailable(&map, new_room)){
-            return 0; // (MODIF) tester si ça pointe bien vers la new room dans la map
+        new_room=createRoom(map, room, 'l');
+        if(isSpaceAvailable(map, new_room)){
+            room->doors++;
+            room->door[LEFT].door_ID=LEFT+1;
+            room->door[LEFT].location='l';
+            return 1; // success
         }
     }
-    room->door[LEFT].co_door.x=NULL; // (MODIF) marche peut etre pas
-    room->door[LEFT].co_door.y=NULL;
-    room->doors--;
-    return 1; // failure
+    return 0; // failure
+}
+int createRightDoor(MAP *map, ROOM *room){
+    room->door[RIGHT].co_door.x=room->co_room.x+room->width-1;
+    room->door[RIGHT].co_door.y=room->co_room.y+1+rand()%(room->height-2);
+    ROOM *new_room;
+    for(int i=0; i<CHECK; i++){
+        new_room=createRoom(map, room, 'r');
+        if(isSpaceAvailable(map, new_room)){
+            room->doors++;
+            room->door[RIGHT].door_ID=RIGHT+1;
+            room->door[RIGHT].location='r';
+            return 1; // success
+        }
+    }
+    return 0; // failure
+}
+int createTopDoor(MAP *map, ROOM *room){
+    room->door[TOP].co_door.x=room->co_room.x+1+rand()%(room->width);
+    room->door[TOP].co_door.y=room->co_room.y;
+    ROOM *new_room;
+    for(int i=0; i<CHECK; i++){
+        new_room=createRoom(map, room, 't');
+        if(isSpaceAvailable(map, new_room)){
+            room->doors++;
+            room->door[TOP].door_ID=TOP+1;
+            room->door[TOP].location='t';
+            return 1; // success
+        }
+    }
+    return 0; // failure
+}
+int createBottomDoor(MAP *map, ROOM *room){
+    room->door[BOTTOM].co_door.x=room->co_room.x+1+rand()%(room->width);
+    room->door[BOTTOM].co_door.y=room->co_room.y+room->height-1;
+    ROOM *new_room;
+    for(int i=0; i<CHECK; i++){
+        new_room=createRoom(map, room, 'b');
+        if(isSpaceAvailable(map, new_room)){
+            room->doors++;
+            room->door[BOTTOM].door_ID=BOTTOM+1;
+            room->door[BOTTOM].location='b';
+            return 1; // success
+        }
+    }
+    return 0; // failure
 }
 
 void createDoors(MAP *map, ROOM *room, char existing_door){
@@ -137,37 +184,39 @@ void createDoors(MAP *map, ROOM *room, char existing_door){
         }
     }
     for (int i=0; i<nb_doors; i++){
-        int wall_index;
+        int chosen;
         do{
-            wall_index=rand()%MAX_DOOR; // choose a random wall for the new door
-        }while(possible_doors[wall_index]==0); // excluding the wall with an existing door
+            chosen=rand()%MAX_DOOR; // choose a random wall for the new door
+        }while(possible_doors[chosen]==0); // excluding the wall with an existing door
 
-        new_doors[i]=possible_doors[wall_index]; // add the new door
-        possible_doors[wall_index]=0; // delete the new door from the possible doors
+        new_doors[i]=possible_doors[chosen]; // add the new door
+        possible_doors[chosen]=0; // delete the new door from the possible doors
     }
-    //
-    // funtion to verify if there is enough space for a room to be created
-    //
     for(int i=0; i<MAX_DOOR; i++){ // create the new doors
         switch(new_doors[i]){
         case 'l':
-            if(createLeftDoor(&map, &room->door[i])){
+            if(!createLeftDoor(map, room)){ // in case the door can't be created
                 possible_doors[LEFT]=0;
                 new_doors[i]=0;
-                // (MODIF) virer la porte ici ou dans la fonction
             }
             break;
         case 'r':
-            room->door[i].co_door.x=room->co_room.x+room->width-1;
-            room->door[i].co_door.y=room->co_room.y+1+rand()%(room->height-2);
+            if(!createLeftDoor(map, room)){ // in case the door can't be created
+                possible_doors[RIGHT]=0;
+                new_doors[i]=0;
+            }
             break;
         case 't':
-            room->door[i].co_door.x=room->co_room.x+1+rand()%(room->width);
-            room->door[i].co_door.y=room->co_room.y;
+            if(!createLeftDoor(map, room)){ // in case the door can't be created
+                possible_doors[TOP]=0;
+                new_doors[i]=0;
+            }
             break;
         case 'b':
-            room->door[i].co_door.x=room->co_room.x+1+rand()%(room->width);
-            room->door[i].co_door.y=room->co_room.y+room->height-1;
+            if(!createLeftDoor(map, room)){ // in case the door can't be created
+                possible_doors[BOTTOM]=0;
+                new_doors[i]=0;
+            }
             break;
         default:
             break;
@@ -181,34 +230,34 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
         perror("Memory allocation error for the spawn\n");
         exit(EXIT_FAILURE);
     }
-    map->nb_rooms++;
+    map->nb_rooms=1;
     spawn->room_ID=0;
-    spawn->co_room.x=0;
-    spawn->co_room.y=0;
-    spawn->width=MAX_SIZE_ROOM_WIDHT;
-    spawn->height=MAX_SIZE_ROOM_HEIGHT;
+    spawn->co_room.x=SPAWN_X;
+    spawn->co_room.y=SPAWN_Y;
+    spawn->width=MAX_SIZE_ROOM_WIDHT*2-1;
+    spawn->height=MAX_SIZE_ROOM_HEIGHT*2-1;
     spawn->doors=4;
     for(int i=0; i<MAX_DOOR; i++){
         spawn->door[i].door_ID=i+1;
         switch(i){ // create the 4 doors for the spawn
         case 0: // left
-            spawn->door[i].co_door.x=0;
-            spawn->door[i].co_door.y=1+rand()%(spawn->height-2);
+            spawn->door[i].co_door.x=spawn->co_room.x;
+            spawn->door[i].co_door.y=spawn->co_room.y+MAX_SIZE_ROOM_HEIGHT;
             spawn->door[i].location='l';
             break;
         case 1: // right
-            spawn->door[i].co_door.x=spawn->width;
-            spawn->door[i].co_door.y=1+rand()%(spawn->height-2);
+            spawn->door[i].co_door.x=spawn->co_room.x+spawn->width;
+            spawn->door[i].co_door.y=spawn->co_room.y+MAX_SIZE_ROOM_HEIGHT;
             spawn->door[i].location='r';
             break;
         case 2: // top
-            spawn->door[i].co_door.x=1+rand()%(spawn->width-2);
-            spawn->door[i].co_door.y=0;
+            spawn->door[i].co_door.x=spawn->co_room.x+MAX_SIZE_ROOM_WIDHT;
+            spawn->door[i].co_door.y=spawn->co_room.y;
             spawn->door[i].location='t';
             break;
         case 3: // bottom
-            spawn->door[i].co_door.x=1+rand()%(spawn->width-2);
-            spawn->door[i].co_door.y=spawn->height;
+            spawn->door[i].co_door.x=spawn->co_room.x+MAX_SIZE_ROOM_WIDHT;
+            spawn->door[i].co_door.y=spawn->co_room.y+spawn->height;
             spawn->door[i].location='b';
             break;
         default:
@@ -222,6 +271,5 @@ int main(void){
     srand(time(NULL));
     unsigned int SEED=rand();
     srand(SEED);
-    int *nb_rooms=0;
     return 0;
 }
