@@ -1,4 +1,42 @@
 #include"gen.h"
+#include"player.h"
+
+void give_seed(int *seed) { // scanf for the seed
+    echo(); // disable hidden text
+    char str[100];
+    printw("Entrez la seed : ");
+    refresh(); // show text
+    getstr(str); // read the seed
+    *seed = atoi(str); // convert everything in int
+    noecho(); // enable hidden text
+}
+
+int getMaxRooms() {
+    int minthRooms = MIN_ROOM;
+    int maxthRooms = MAX_DOOR;
+    return rand() % (maxthRooms - minthRooms + 1) + minthRooms; // number of rooms
+}
+MAP *create_map(){
+    int seed;
+    give_seed(&seed); // ask the seed
+    srand(seed); // init random on the seed
+    MAP *map = (MAP *)malloc(sizeof(MAP)); // memory allocation for the map
+    if (map == NULL) { // security
+        perror("Memory allocation error for the map\n");
+        exit(EXIT_FAILURE);
+    }
+    map->max_room = getMaxRooms(); // max_room
+    map->room = (ROOM *)malloc(sizeof(ROOM) * map->max_room); // memory allocation for the table of rooms
+    if (map->room == NULL) { // security
+        perror("Memory allocation error for the map rooms\n");
+        exit(EXIT_FAILURE);
+    }
+    map->room[0]=*Spawn(map);
+    PLAYER player;
+    Display_room(&player, map, 0);
+
+    return map;
+}
 
 int isSpaceAvailable(MAP *map, ROOM *new_room){
     // Check for collisions with existing rooms
@@ -18,7 +56,7 @@ int isSpaceAvailable(MAP *map, ROOM *new_room){
 
 ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     ROOM *new_room=(ROOM *)malloc(sizeof(ROOM)); // memory allocation for the new room
-    if (new_room==NULL) {
+    if (new_room==NULL) { // security
         perror("Memory allocation error for the new room\n");
         exit(EXIT_FAILURE);
     }
@@ -244,21 +282,25 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
             spawn->door[i].co_door.x=spawn->co_room.x;
             spawn->door[i].co_door.y=spawn->co_room.y+MAX_SIZE_ROOM_HEIGHT;
             spawn->door[i].location='l';
+            createRoom(map, spawn, spawn->door[i].location);
             break;
         case 1: // right
             spawn->door[i].co_door.x=spawn->co_room.x+spawn->width;
             spawn->door[i].co_door.y=spawn->co_room.y+MAX_SIZE_ROOM_HEIGHT;
             spawn->door[i].location='r';
+            createRoom(map, spawn, spawn->door[i].location);
             break;
         case 2: // top
             spawn->door[i].co_door.x=spawn->co_room.x+MAX_SIZE_ROOM_WIDHT;
             spawn->door[i].co_door.y=spawn->co_room.y;
             spawn->door[i].location='t';
+            createRoom(map, spawn, spawn->door[i].location);
             break;
         case 3: // bottom
             spawn->door[i].co_door.x=spawn->co_room.x+MAX_SIZE_ROOM_WIDHT;
             spawn->door[i].co_door.y=spawn->co_room.y+spawn->height;
             spawn->door[i].location='b';
+            createRoom(map, spawn, spawn->door[i].location);
             break;
         default:
             break;
