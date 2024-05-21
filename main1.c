@@ -14,7 +14,7 @@ int main(void){
     // SEED = [SEED entered by the player] // action done if the player start the game with a predetermined seed
     srand(SEED); // overwrite time(NULL) to make the rand() predetermined
     
-
+    
 
 
     getch(); // read user key input
