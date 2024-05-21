@@ -269,7 +269,6 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
     return spawn;
 }
 
-
 void Display_room(PLAYER *player, MAP *map, int room_index) {
     int width = map->room[room_index].width; // nom plus court pour width
     int height = map->room[room_index].height; // nom plus court pour height
