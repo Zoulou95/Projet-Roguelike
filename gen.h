@@ -43,5 +43,3 @@ typedef struct{
 }MAP;
 
 #endif
-
-// chercher (MODIF)
