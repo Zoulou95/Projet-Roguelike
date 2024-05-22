@@ -4,10 +4,13 @@
 #include<stdlib.h>
 #include<time.h>
 #include<ncurses.h>
-#define MAX_SIZE_ROOM_WIDHT 11
+#define MAX_SIZE_ROOM_WIDTH 11
 #define MAX_SIZE_ROOM_HEIGHT 11
 #define MIN_SIZE_ROOM_WIDHT 5
 #define MIN_SIZE_ROOM_HEIGHT 5
+#define MIN_SIZE_ROOM_WIDTH 5
+#define DISPLAY_HEIGHT 11
+#define DISPLAY_WIDTH 11
 #define MAX_DOOR 4
 #define LEFT 0
 #define RIGHT 1
