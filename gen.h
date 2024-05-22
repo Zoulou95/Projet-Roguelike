@@ -4,7 +4,7 @@
 #include<stdlib.h>
 #include<time.h>
 #include<ncurses.h>
-#define MAX_SIZE_ROOM_WIDHT 11
+#define MAX_SIZE_ROOM_WIDTH 11
 #define MAX_SIZE_ROOM_HEIGHT 11
 #define MIN_SIZE_ROOM_WIDHT 5
 #define MIN_SIZE_ROOM_HEIGHT 5

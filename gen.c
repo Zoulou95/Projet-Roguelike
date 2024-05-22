@@ -309,25 +309,25 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
     return spawn;
 }
 
-void Display_room(PLAYER *player, MAP *map, int room_index) {
-    int width = map->room[room_index].width; // nom plus court pour width
-    int height = map->room[room_index].height; // nom plus court pour height
-    char room[height][width]; // tableau de la room pour mettre les char (double tableau = matrice)
+void Display_room(PLAYER *player, MAP *map, int room_index){
+    int width = map->room[room_index].width;
+    int height = map->room[room_index].height;
+    char room[height][width]; // tab to create the display of the room 
     int ch;
 
-    // Initialisation de la salle avec des bordures et des espaces vides
-    for (int i = 0; i < height; i++) {
-        for (int j = 0; j < width; j++) {
-            if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
-                room[i][j] = '#'; // bordures de la salle
+    // init the room
+    for (int co_y=map->room[room_index].co_room.y; co_y < map->room[room_index].co_room.y+height; co_y++){
+        for (int co_x=map->room[room_index].co_room.x; co_x < map->room[room_index].co_room.y+width; co_x++) {
+            if (co_y == 0 || co_y == height - 1 || co_x == 0 || co_x == width - 1) {
+                room[co_y][co_x] = '#'; // room borders
             } else {
-                room[i][j] = ' '; // espaces vides à l'intérieur de la salle
+                room[co_y][co_x] = ' '; // blank space in the room
             }
         }
     }
  
-    player->y = height / 2; // mettre le joueur au milieu de la salle (ici le spawn)
-    player->x = width / 2;
+    player->y = map->room[room_index]+height / 2; // player spawn at the middle of the spawn
+    player->x = map->room[room_index]+width / 2;
 
     
     while (1) { // Boucle de jeu
