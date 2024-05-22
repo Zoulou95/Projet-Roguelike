@@ -31,9 +31,9 @@ MAP *create_map(){
         perror("Memory allocation error for the map rooms\n");
         exit(EXIT_FAILURE);
     }
+    PLAYER *player;
     map->room[0]=*Spawn(map);
-    PLAYER player;
-    Display_room(&player, map, 0);
+    Display_room(&player, map, 0, 0);
 
     return map;
 }
@@ -309,26 +309,48 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
     return spawn;
 }
 
-void Display_room(PLAYER *player, MAP *map, int room_index){
-    int width = map->room[room_index].width;
-    int height = map->room[room_index].height;
+void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
+    int width = map->room[room_ID].width;
+    int height = map->room[room_ID].height;
     char room[height][width]; // tab to create the display of the room 
     int ch;
 
     // init the room
-    for (int co_y=map->room[room_index].co_room.y; co_y < map->room[room_index].co_room.y+height; co_y++){
-        for (int co_x=map->room[room_index].co_room.x; co_x < map->room[room_index].co_room.y+width; co_x++) {
-            if (co_y == 0 || co_y == height - 1 || co_x == 0 || co_x == width - 1) {
+    for (int co_y=map->room[room_ID].co_room.y; co_y < map->room[room_ID].co_room.y+height; co_y++){
+        for (int co_x=map->room[room_ID].co_room.x; co_x < map->room[room_ID].co_room.y+width; co_x++) {
+            if (co_y == map->room[room_ID].co_room.y ||
+            co_y == map->room[room_ID].co_room.y+height-1 ||
+            co_x == map->room[room_ID].co_room.x ||
+            co_x == map->room[room_ID].co_room.x+width-1){
                 room[co_y][co_x] = '#'; // room borders
             } else {
                 room[co_y][co_x] = ' '; // blank space in the room
             }
         }
     }
- 
-    player->y = map->room[room_index]+height / 2; // player spawn at the middle of the spawn
-    player->x = map->room[room_index]+width / 2;
-
+    if(room_ID==0){
+        player->y = map->room[room_ID].co_room.y+map->room[room_ID].height / 2; // player spawn at the middle of the spawn
+        player->x = map->room[room_ID].co_room.x+map->room[room_ID].width / 2;
+    }
+    else{
+        switch(location){
+        case 'l': // spawn at the right side
+            player->y=map->room[room_ID].door[RIGHT].co_door.y;
+            player->x=map->room[room_ID].door[RIGHT].co_door.x-1;
+            break;
+        case 'r': // spawn at the left side
+            player->y=map->room[room_ID].door[LEFT].co_door.y;
+            player->x=map->room[room_ID].door[LEFT].co_door.x+1;
+        case 't': // spawn at the bottom side
+            player->y=map->room[room_ID].door[BOTTOM].co_door.y-1;
+            player->x=map->room[room_ID].door[BOTTOM].co_door.x;
+        case 'b': // spawn at the top side
+            player->y=map->room[room_ID].door[TOP].co_door.y+1;
+            player->x=map->room[room_ID].door[TOP].co_door.x;
+        default:
+            break;
+        }
+    }
     
     while (1) { // Boucle de jeu
         display_room_view(player, width, height, room); // vision 11x11 (dans gen.h modifiable)
