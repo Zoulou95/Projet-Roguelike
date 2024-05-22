@@ -1,5 +1,4 @@
 #include "player.h"
-#include "gen.h"
 
 void move_player(PLAYER *player, int width, int height, char room[][width], int ch) {
     switch(ch) {
