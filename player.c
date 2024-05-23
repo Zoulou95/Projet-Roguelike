@@ -1,7 +1,43 @@
 #include "struct.h"
 #include "gen.h"
 
+int find_player_room(MAP *map, PLAYER *player) {
+    for (int i = 0; i < map->nb_rooms; i++) {
+        ROOM *room = &map->room[i];
+        
+        // Check if player is within the room's boundaries
+        if (player->x >= room->co_room.x && player->x < room->co_room.x + room->width &&
+            player->y >= room->co_room.y && player->y < room->co_room.y + room->height) {
+            return room->room_ID; // Return the room ID
+        }
+    }
+}
+
+void teleport(PLAYER *player, MAP *map, int room_ID, char location){
+    switch(location){
+    case 'l':
+        player->y=map->room[room_ID].door[LEFT].co_door.y;
+        player->x=map->room[room_ID].door[LEFT].co_door.x-2;
+        break;
+    case 'r':
+        player->y=map->room[room_ID].door[RIGHT].co_door.y;
+        player->x=map->room[room_ID].door[RIGHT].co_door.x+2;
+        break;
+    case 't':
+        player->y=map->room[room_ID].door[TOP].co_door.y-2;
+        player->x=map->room[room_ID].door[TOP].co_door.x;
+        break;
+    case 'b':
+        player->y=map->room[room_ID].door[BOTTOM].co_door.y+2;
+        player->x=map->room[room_ID].door[BOTTOM].co_door.x;
+        break;
+    default:
+        break;
+    }
+}
+
 void move_player(PLAYER *player, MAP *map, int ch) {
+    player->current_room=find_player_room(map, player);
     ROOM *room = &map->room[player->current_room];
     int new_x = player->x;
     int new_y = player->y;
@@ -27,30 +63,21 @@ void move_player(PLAYER *player, MAP *map, int ch) {
             for(int i=0; i<MAX_DOOR; i++){
                 if(room->door[i].co_door.x==new_x && room->door[i].co_door.y==new_y){
                     if(room->door[i].closed==0){
-                    teleport(player, map, map->room[player->current_room].room_ID, room->door[i].location);
+                        teleport(player, map, map->room[player->current_room].room_ID, room->door[i].location);
+                        player->current_room=find_player_room(map, player);
+                        break;
                     }
-                    else{
-                        
+                    else if(room->door[i].closed==1){
+                        teleport(player, map, map->room[player->current_room].room_ID, room->door[i].location);
+                        player->current_room=find_player_room(map, player);
+                        Display_room(player, map, map->room[player->current_room].room_ID, room->door[i].location);
+                        room->door[i].closed=0;
+                        break;
                     }
                 }
             }
-            
-            
-            
-            
-            // Transition to the adjacent room
-            for (int i = 0; i < map->max_room; i++) {
-                ROOM *adj_room = &map->room[i];
-                if (adj_room->co_room.x == room->co_room.x + (new_x == 0 ? -1 : (new_x == room->width - 1 ? 1 : 0)) &&
-                    adj_room->co_room.y == room->co_room.y + (new_y == 0 ? -1 : (new_y == room->height - 1 ? 1 : 0))) {
-                    player->current_room = i;
-                    player->x = (new_x == 0 ? adj_room->width - 2 : (new_x == room->width - 1 ? 1 : adj_room->width / 2));
-                    player->y = (new_y == 0 ? adj_room->height - 2 : (new_y == room->height - 1 ? 1 : adj_room->height / 2));
-                    adj_room->explored = 1;
-                    break;
-                }
-            }
-        } else if (room->data[new_y][new_x] != '#') {
+        }
+        else if (room->data[new_y][new_x] != '#') {
             // Move player within the same room
             player->x = new_x;
             player->y = new_y;

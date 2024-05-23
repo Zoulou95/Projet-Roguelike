@@ -38,7 +38,7 @@ typedef struct{
     COORD co_room; // room coordinates
     int width;
     int height;
-    int doors;
+    int doors; // number of doors
     DOOR door[MAX_DOOR];
     char **data;
     int explored;
