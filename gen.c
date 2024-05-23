@@ -1,5 +1,6 @@
 #include"gen.h"
-#include"player.h"
+#include"menu.h"
+#include"struct.h"
 
 void give_seed(int *seed) { // scanf for the seed
     echo(); // disable hidden text
@@ -34,7 +35,10 @@ MAP *create_map(){
     PLAYER *player;
     map->room[0]=*Spawn(map);
     Display_room(&player, map, 0, 0);
-
+    map->room[0].data[map->room[0].door[LEFT].co_door.y][map->room[0].door[LEFT].co_door.x]='d';
+    map->room[0].data[map->room[0].door[RIGHT].co_door.y][map->room[0].door[RIGHT].co_door.x]='d';
+    map->room[0].data[map->room[0].door[TOP].co_door.y][map->room[0].door[TOP].co_door.x]='d';
+    map->room[0].data[map->room[0].door[BOTTOM].co_door.y][map->room[0].door[BOTTOM].co_door.x]='d';
     return map;
 }
 
@@ -59,6 +63,9 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     if (new_room==NULL) { // security
         perror("Memory allocation error for the new room\n");
         exit(EXIT_FAILURE);
+    }
+    for(int i=0; i<MAX_DOOR; i++){ // init doors ID to -1
+        new_room->door[i].door_ID=-1;
     }
     char dir; // direction to create the new room
     new_room->doors=1;
@@ -151,6 +158,8 @@ int numberOfDoors(MAP *map){ // probability to create a new door
     }
 }
 
+
+
 int createLeftDoor(MAP *map, ROOM *room){
     room->door[LEFT].co_door.x=room->co_room.x;
     room->door[LEFT].co_door.y=room->co_room.y+1+rand()%(room->height-2);
@@ -161,6 +170,7 @@ int createLeftDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[LEFT].door_ID=LEFT+1;
             room->door[LEFT].location='l';
+            room->data[room->door[LEFT].co_door.y][room->door[LEFT].co_door.x]='d';
             return 1; // success
         }
     }
@@ -176,6 +186,7 @@ int createRightDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[RIGHT].door_ID=RIGHT+1;
             room->door[RIGHT].location='r';
+            room->data[room->door[RIGHT].co_door.y][room->door[RIGHT].co_door.x]='d';
             return 1; // success
         }
     }
@@ -191,6 +202,7 @@ int createTopDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[TOP].door_ID=TOP+1;
             room->door[TOP].location='t';
+            room->data[room->door[TOP].co_door.y][room->door[TOP].co_door.x]='d';
             return 1; // success
         }
     }
@@ -206,6 +218,7 @@ int createBottomDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[BOTTOM].door_ID=BOTTOM+1;
             room->door[BOTTOM].location='b';
+            room->data[room->door[BOTTOM].co_door.y][room->door[BOTTOM].co_door.x]='d';
             return 1; // success
         }
     }
@@ -274,7 +287,8 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
     spawn->co_room.y=SPAWN_Y;
     spawn->width=MAX_SIZE_ROOM_WIDTH*2-1;
     spawn->height=MAX_SIZE_ROOM_HEIGHT*2-1;
-    spawn->doors=4;
+    spawn->doors=MAX_DOOR;
+    spawn->explored=1;
     for(int i=0; i<MAX_DOOR; i++){
         spawn->door[i].door_ID=i+1;
         switch(i){ // create the 4 doors for the spawn
@@ -309,10 +323,32 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
     return spawn;
 }
 
+void teleport(PLAYER *player, MAP *map, int room_ID, char location){
+    switch(location){
+    case 'l':
+        player->y=map->room[room_ID].door[LEFT].co_door.y;
+        player->x=map->room[room_ID].door[LEFT].co_door.x+1;
+        break;
+    case 'r':
+        player->y=map->room[room_ID].door[RIGHT].co_door.y;
+        player->x=map->room[room_ID].door[RIGHT].co_door.x-1;
+        break;
+    case 't':
+        player->y=map->room[room_ID].door[TOP].co_door.y+1;
+        player->x=map->room[room_ID].door[TOP].co_door.x;
+        break;
+    case 'b':
+        player->y=map->room[room_ID].door[BOTTOM].co_door.y-1;
+        player->x=map->room[room_ID].door[BOTTOM].co_door.x;
+        break;
+    default:
+        break;
+    }
+}
+
 void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
     int width = map->room[room_ID].width;
     int height = map->room[room_ID].height;
-    char room[height][width]; // tab to create the display of the room 
     int ch;
 
     // init the room
@@ -322,9 +358,9 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
             co_y == map->room[room_ID].co_room.y+height-1 ||
             co_x == map->room[room_ID].co_room.x ||
             co_x == map->room[room_ID].co_room.x+width-1){
-                room[co_y][co_x] = '#'; // room borders
+                map->room[room_ID].data[co_y][co_x] = '#'; // room borders
             } else {
-                room[co_y][co_x] = ' '; // blank space in the room
+                map->room[room_ID].data[co_y][co_x] = ' '; // blank space in the room
             }
         }
     }
@@ -335,27 +371,26 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
     else{
         switch(location){
         case 'l': // spawn at the right side
-            player->y=map->room[room_ID].door[RIGHT].co_door.y;
-            player->x=map->room[room_ID].door[RIGHT].co_door.x-1;
+            teleport(player, map, room_ID, 'r');
             break;
         case 'r': // spawn at the left side
-            player->y=map->room[room_ID].door[LEFT].co_door.y;
-            player->x=map->room[room_ID].door[LEFT].co_door.x+1;
+            teleport(player, map, room_ID, 'l');
+            break;            
         case 't': // spawn at the bottom side
-            player->y=map->room[room_ID].door[BOTTOM].co_door.y-1;
-            player->x=map->room[room_ID].door[BOTTOM].co_door.x;
+            teleport(player, map, room_ID, 'b');
+            break;
         case 'b': // spawn at the top side
-            player->y=map->room[room_ID].door[TOP].co_door.y+1;
-            player->x=map->room[room_ID].door[TOP].co_door.x;
+            teleport(player, map, room_ID, 't');
+            break;
         default:
             break;
         }
     }
     
     while (1) { // Boucle de jeu
-        display_room_view(player, width, height, room); // vision 11x11 (dans gen.h modifiable)
+        display_room_view(player, map, width, height, room_ID); // vision 11x11 (dans gen.h modifiable)
         ch = getch(); //prend un charactère
-        move_player(player, width, height, room, ch); // déplace le joueur avec la charactère
+        move_player(player, map->room[room_ID].data, ch); // déplace le joueur avec la charactère
         if (ch == 27) { // escape pour quitter
             clear(); //clear le terminal sinon ça se superpose avec le menu
             refresh(); //rafraîchit le terminal sinon ça change pas
@@ -371,7 +406,7 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
     endwin();
 }
 
-void display_room_view(PLAYER *player, int width, int height, char room[][width]) { //fonction pour la vision
+void display_room_view(PLAYER *player, MAP *map, int width, int height, int room_ID) { //fonction pour la vision
 
     clear();
     for (int i = 0; i < DISPLAY_HEIGHT; i++) { //affiche la longueur
@@ -382,7 +417,7 @@ void display_room_view(PLAYER *player, int width, int height, char room[][width]
                 if (y == player->y && x == player->x) {
                     printw("P"); // Afficher le joueur
                 } else {
-                    printw("%c", room[y][x]); // Afficher les bordures et les espaces vides
+                    printw("%c", map->room[room_ID].data[y][x]); // Afficher les bordures et les espaces vides
                 }
             } else {
                 printw(" "); // Afficher un espace pour les cases hors de la salle
