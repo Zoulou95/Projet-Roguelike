@@ -1,6 +1,6 @@
 #include "menu.h"
 #include "gen.h"
-#include "player.h"
+#include "struct.h"
 
 FICHIER create_file() {
     FICHIER file;
