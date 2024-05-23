@@ -22,7 +22,7 @@ void move_player(PLAYER *player, MAP *map, int ch) {
     }
 
     // Check if the new position is within the room boundaries
-    if (new_x >= 0 && new_x < room->width && new_y >= 0 && new_y < room->height) {
+    if (new_x >= room->co_room.x && new_x < room->co_room.x+room->width && new_y >= room->co_room.y && new_y < room->co_room.y+room->height) {
         if (room->data[new_y][new_x] == 'd') {
             // Transition to the adjacent room
             for (int i = 0; i < map->max_room; i++) {

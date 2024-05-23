@@ -232,6 +232,8 @@ void createDoors(MAP *map, ROOM *room, char existing_door){
     for (int i=0; i<MAX_DOOR; i++){ // delete the existing door from the possible doors
         if (possible_doors[i]==existing_door){
             possible_doors[i]=0;
+            room->door[i].closed=0;
+            
         }
     }
     for (int i=0; i<nb_doors; i++){
@@ -327,18 +329,18 @@ void teleport(PLAYER *player, MAP *map, int room_ID, char location){
     switch(location){
     case 'l':
         player->y=map->room[room_ID].door[LEFT].co_door.y;
-        player->x=map->room[room_ID].door[LEFT].co_door.x+2;
+        player->x=map->room[room_ID].door[LEFT].co_door.x-2;
         break;
     case 'r':
         player->y=map->room[room_ID].door[RIGHT].co_door.y;
-        player->x=map->room[room_ID].door[RIGHT].co_door.x-2;
+        player->x=map->room[room_ID].door[RIGHT].co_door.x+2;
         break;
     case 't':
-        player->y=map->room[room_ID].door[TOP].co_door.y+2;
+        player->y=map->room[room_ID].door[TOP].co_door.y-2;
         player->x=map->room[room_ID].door[TOP].co_door.x;
         break;
     case 'b':
-        player->y=map->room[room_ID].door[BOTTOM].co_door.y-2;
+        player->y=map->room[room_ID].door[BOTTOM].co_door.y+2;
         player->x=map->room[room_ID].door[BOTTOM].co_door.x;
         break;
     default:
@@ -372,15 +374,19 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
         switch(location){
         case 'l': // spawn at the right side
             teleport(player, map, map->room[room_ID].room_ID, 'r');
+            map->room[room_ID].data[map->room[room_ID].door[LEFT].co_door.y][map->room[room_ID].door[LEFT].co_door.x-1]='d';
             break;
         case 'r': // spawn at the left side
             teleport(player, map, map->room[room_ID].room_ID, 'l');
+            map->room[room_ID].data[map->room[room_ID].door[RIGHT].co_door.y][map->room[room_ID].door[RIGHT].co_door.x+1]='d';
             break;            
         case 't': // spawn at the bottom side
             teleport(player, map, map->room[room_ID].room_ID, 'b');
+            map->room[room_ID].data[map->room[room_ID].door[TOP].co_door.y-1][map->room[room_ID].door[TOP].co_door.x]='d';
             break;
         case 'b': // spawn at the top side
             teleport(player, map, map->room[room_ID].room_ID, 't');
+            map->room[room_ID].data[map->room[room_ID].door[BOTTOM].co_door.y+1][map->room[room_ID].door[BOTTOM].co_door.x]='d';
             break;
         default:
             break;
