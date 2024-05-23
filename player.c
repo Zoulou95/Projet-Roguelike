@@ -24,6 +24,20 @@ void move_player(PLAYER *player, MAP *map, int ch) {
     // Check if the new position is within the room boundaries
     if (new_x >= room->co_room.x && new_x < room->co_room.x+room->width && new_y >= room->co_room.y && new_y < room->co_room.y+room->height) {
         if (room->data[new_y][new_x] == 'd') {
+            for(int i=0; i<MAX_DOOR; i++){
+                if(room->door[i].co_door.x==new_x && room->door[i].co_door.y==new_y){
+                    if(room->door[i].closed==0){
+                    teleport(player, map, map->room[player->current_room].room_ID, room->door[i].location);
+                    }
+                    else{
+                        
+                    }
+                }
+            }
+            
+            
+            
+            
             // Transition to the adjacent room
             for (int i = 0; i < map->max_room; i++) {
                 ROOM *adj_room = &map->room[i];

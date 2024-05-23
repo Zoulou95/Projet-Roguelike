@@ -16,5 +16,6 @@ void createDoors(MAP *map, ROOM *room, char existing_door);
 ROOM *Spawn(MAP *map);
 void display_room_view(PLAYER *player, MAP *map, int width, int height, int room_ID);
 void move_player(PLAYER *player, MAP *map, int ch);
+void teleport(PLAYER *player, MAP *map, int room_ID, char location);
 
 #endif

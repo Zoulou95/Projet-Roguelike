@@ -366,6 +366,7 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
             }
         }
     }
+    
     if(room_ID==0){
         player->y = map->room[room_ID].co_room.y+map->room[room_ID].height / 2; // player spawn at the middle of the spawn
         player->x = map->room[room_ID].co_room.x+map->room[room_ID].width / 2;
