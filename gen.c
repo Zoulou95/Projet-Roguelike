@@ -35,6 +35,8 @@ MAP *create_map(){
     PLAYER *player;
     player->current_room=0;
     map->room[0]=*Spawn(map);
+    player->y = map->room[0].co_room.y+map->room[0].height / 2; // player spawn at the middle of the spawn
+    player->x = map->room[0].co_room.x+map->room[0].width / 2;
     Display_room(player, map, 0, 0);
     map->room[0].data[map->room[0].door[LEFT].co_door.y][map->room[0].door[LEFT].co_door.x]='d';
     map->room[0].data[map->room[0].door[RIGHT].co_door.y][map->room[0].door[RIGHT].co_door.x]='d';
@@ -286,6 +288,7 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
     if (spawn->data == NULL){
         perror("Memory allocation error for spawn data");
         exit(EXIT_FAILURE);
+    }
     for (int i = 0; i < spawn->height; i++) {
         spawn->data[i] = (char *)malloc(spawn->width * sizeof(char));
         if (spawn->data[i] == NULL) {
@@ -405,22 +408,22 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
 
 
 
-void Display_room(PLAYER *player, MAP *map, int room_ID, char location){ // room to display; location: door where you came from
+void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
     int width = map->room[room_ID].width;
     int height = map->room[room_ID].height;
-    room->data = (char **)malloc(room->height * sizeof(char *));
-    if (room->data == NULL) {
+    map->room[room_ID].data = (char **)malloc(map->room[room_ID].height * sizeof(char *));
+    if (map->room[room_ID].data == NULL) {
         perror("Memory allocation error for room data");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < room->height; i++) {
-        room->data[i] = (char *)malloc(room->width * sizeof(char));
-        if (room->data[i] == NULL) {
+    for (int i = 0; i < map->room[room_ID].height; i++) {
+        map->room[room_ID].data[i] = (char *)malloc(map->room[room_ID].width * sizeof(char));
+        if (map->room[room_ID].data[i] == NULL) {
             perror("Memory allocation error for room data");
             exit(EXIT_FAILURE);
         }
-        for (int j = 0; j < room->width; j++) {
-            room->data[i][j] = ' ';
+        for (int j = 0; j < map->room[room_ID].width; j++) {
+            map->room[room_ID].data[i][j] = ' ';
         }
     }
     map->room[room_ID].data[height][width];
@@ -437,12 +440,7 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){ // room
             }
         }
     }
-
-    if(room_ID==0){
-        player->y = map->room[room_ID].co_room.y+map->room[room_ID].height / 2; // player spawn at the middle of the spawn
-        player->x = map->room[room_ID].co_room.x+map->room[room_ID].width / 2;
-    }
-    else{
+    if(room_ID!=0){
         switch(location){ // create new door
         case 'l': // at the right
             map->room[room_ID].data[map->room[room_ID].door[RIGHT].co_door.y][map->room[room_ID].door[RIGHT].co_door.x]='d';
