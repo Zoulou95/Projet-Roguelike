@@ -5,7 +5,7 @@
 
 // void give_seed(int *seed);
 int getMaxRooms();
-MAP *create_map();
+MAP *create_map(PLAYER *player, MAP *map);
 int isSpaceAvailable(MAP *map, ROOM *new_room);
 ROOM *createRoom(MAP *map, ROOM *prev_room, char location);
 // ROOM *create_room(int width, int height, int x, int y);

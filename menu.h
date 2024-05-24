@@ -6,8 +6,8 @@
 #include <stdio.h>
 
 FICHIER create_file();
-void print_menu(FICHIER file, int choice);
-void choice_menu(int choice);
+void print_menu(FICHIER file, int choice, PLAYER *player, MAP *map);
+void choice_menu(int choice, PLAYER *player, MAP *map);
 FICHIER create_file();
 
 #endif

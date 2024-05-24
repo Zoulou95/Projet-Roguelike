@@ -20,11 +20,11 @@ FICHIER create_file() {
     return file;
 }
 
-void choice_menu(int choice){
+void choice_menu(int choice, PLAYER *player, MAP *map){
     if(choice == 0){
         clear();
         // Créer une carte
-        MAP *map = create_map();
+        create_map(player, map);
     }
 
     else if(choice == 2){
@@ -34,7 +34,7 @@ void choice_menu(int choice){
     }
 }
 
-void print_menu(FICHIER file, int choice){ 
+void print_menu(FICHIER file, int choice, PLAYER *player, MAP *map){ 
     initscr(); // initialiser ncurses
     noecho(); // ne pas montrer l'input de l'utilisateur car sans ça sur la fenêtre il y aurait des 'z' et 's' partout
     cbreak(); // lire les touches immédiatement sans appuyer sur espace
@@ -53,7 +53,7 @@ void print_menu(FICHIER file, int choice){
                 attroff(A_REVERSE); // fin de l'attribut qui permet de renverser la couleur du texte et du background
                 refresh(); //rafraichir la fenêtre pour afficher la fenêtre actuelle sinon ça ne s'affiche pas
                 if(ch == 10){
-                    choice_menu(i);
+                    choice_menu(i, player, map);
                 }
             }
             else {
