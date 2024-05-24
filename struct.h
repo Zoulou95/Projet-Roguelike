@@ -29,8 +29,8 @@ typedef struct{ // structure for coordinates
 
 typedef struct{
     int closed; // door ID
-    COORD co_door; // room coordinates
     char location;
+    int gap;
 }DOOR;
 
 typedef struct{
