@@ -6,7 +6,6 @@
 #include<ncurses.h>
 #define MAX_SIZE_ROOM_WIDTH 11
 #define MAX_SIZE_ROOM_HEIGHT 11
-#define MIN_SIZE_ROOM_WIDHT 5
 #define MIN_SIZE_ROOM_HEIGHT 5
 #define MIN_SIZE_ROOM_WIDTH 5
 #define DISPLAY_HEIGHT 11
@@ -37,6 +36,8 @@ typedef struct{
 typedef struct{
     int room_ID; // room ID
     COORD co_room; // room coordinates
+    // int x;
+    // int y;
     int width;
     int height;
     int doors; // number of doors
