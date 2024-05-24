@@ -20,11 +20,11 @@ FICHIER create_file() {
     return file;
 }
 
-void choice_menu(int choice, PLAYER *player, MAP *map){
+void choice_menu(int choice){
     if(choice == 0){
         clear();
         // Créer une carte
-        create_map(player, map);
+        create_map();
     }
 
     else if(choice == 2){
@@ -34,7 +34,7 @@ void choice_menu(int choice, PLAYER *player, MAP *map){
     }
 }
 
-void print_menu(FICHIER file, int choice, PLAYER *player, MAP *map){ 
+void print_menu(FICHIER file, int choice){ 
     initscr(); // initialiser ncurses
     noecho(); // ne pas montrer l'input de l'utilisateur car sans ça sur la fenêtre il y aurait des 'z' et 's' partout
     cbreak(); // lire les touches immédiatement sans appuyer sur espace
@@ -53,7 +53,7 @@ void print_menu(FICHIER file, int choice, PLAYER *player, MAP *map){
                 attroff(A_REVERSE); // fin de l'attribut qui permet de renverser la couleur du texte et du background
                 refresh(); //rafraichir la fenêtre pour afficher la fenêtre actuelle sinon ça ne s'affiche pas
                 if(ch == 10){
-                    choice_menu(i, player, map);
+                    choice_menu(i);
                 }
             }
             else {
@@ -79,4 +79,33 @@ void print_menu(FICHIER file, int choice, PLAYER *player, MAP *map){
             break;
         }
     }
+}
+
+// Function to run the main game loop
+void game_loop(PLAYER *player, MAP *map, int room_ID) {
+    int ch;
+    int width = map->room[room_ID].width;
+    int height = map->room[room_ID].height;
+
+    while (1) { // Game loop
+        display_room_view(player, map, width, height, room_ID); // Display room view
+        ch = getch(); // Take a character input
+        move_player(player, map, ch); // Move the player according to the input character
+        if (ch == 27) { // Escape to quit
+            clear(); // Clear the terminal
+            refresh(); // Refresh the terminal
+            for (int i = 0; i < height; i++) {
+                free(map->room[room_ID].data[i]); // Free memory of room data rows
+            }
+            free(map->room[room_ID].data); // Free memory of room data
+            free(map->room); // Free memory of rooms
+            free(map);  // Free memory of the map
+            FICHIER file = create_file(); // Recreate a file
+            print_menu(file, 0); // Display menu
+            break;
+        }
+    }
+
+    // Terminate ncurses
+    endwin();
 }

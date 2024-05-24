@@ -2,6 +2,7 @@
 #include"menu.h"
 #include"struct.h"
 
+
 // void give_seed(int *seed) { // scanf for the seed
 //     echo(); // disable hidden text
 //     char str[100];
@@ -17,11 +18,21 @@ int getMaxRooms(){
     int maxthRooms = MAX_DOOR;
     return rand() % (maxthRooms - minthRooms + 1) + minthRooms; // number of rooms
 }
-MAP *create_map(PLAYER *player, MAP *map){
+MAP *create_map(){
     // int seed;
     // give_seed(&seed); // ask the seed
     // srand(seed); // init random on the seed
     srand(5);
+    PLAYER *player = (PLAYER *)malloc(sizeof(PLAYER));  // Initialize player
+    if (player == NULL) {
+        perror("Memory allocation error for player\n");
+        exit(4);
+    }
+    MAP *map = (MAP *)malloc(sizeof(MAP)); // memory allocation for the map
+    if (map == NULL) { // security
+        perror("Memory allocation error for the map\n");
+        exit(2);
+    }
     map->max_room = getMaxRooms(); // max_room
     map->room = (ROOM *)malloc(sizeof(ROOM) * map->max_room); // memory allocation for the table of rooms
     if (map->room == NULL) { // security
@@ -279,6 +290,9 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
         perror("Memory allocation error for the spawn\n");
         exit(6);
     }
+    spawn->width=MAX_SIZE_ROOM_WIDTH*2-1;
+    spawn->height=MAX_SIZE_ROOM_HEIGHT*2-1;
+
     spawn->data = (char **)malloc(spawn->height * sizeof(char *));
     if (spawn->data == NULL){
         perror("Memory allocation error for spawn data");
@@ -298,8 +312,6 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
     spawn->room_ID=0;
     spawn->co_room.x=SPAWN_X;
     spawn->co_room.y=SPAWN_Y;
-    spawn->width=MAX_SIZE_ROOM_WIDTH*2-1;
-    spawn->height=MAX_SIZE_ROOM_HEIGHT*2-1;
     spawn->doors=MAX_DOOR;
     spawn->explored=1;
     for(int i=0; i<MAX_DOOR; i++){
@@ -393,24 +405,24 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
         }
     }
 
-    // int ch;
-    // while (1) { // Game loop
-    //     display_room_view(player, map, width, height, room_ID); // vision 11x11 (modifiable in gen.h)
-    //     ch = getch(); // take a character input
-    //     move_player(player, map, ch); // move the player according to the input character
-    //     if (ch == 27) { // escape to quit
-    //         clear(); // clear the terminal
-    //         refresh(); // refresh the terminal
-    //         free(map->room); // free memory of rooms
-    //         free(map);  // free memory of the map
-    //         FICHIER file = create_file(); // recreate a file
-    //         print_menu(file, 0); // display menu
-    //         break;
-    //     }
-    // }
+    int ch;
+    while (1) { // Game loop
+        display_room_view(player, map, width, height, room_ID); // vision 11x11 (modifiable in gen.h)
+        ch = getch(); // take a character input
+        move_player(player, map, ch); // move the player according to the input character
+        if (ch == 27) { // escape to quit
+            clear(); // clear the terminal
+            refresh(); // refresh the terminal
+            free(map->room); // free memory of rooms
+            free(map);  // free memory of the map
+            FICHIER file = create_file(); // recreate a file
+            print_menu(file, 0); // display menu
+            break;
+        }
+    }
 
-    // // End ncurses
-    // endwin();
+    // End ncurses
+    endwin();
 }
 
 void display_room_view(PLAYER *player, MAP *map, int width, int height, int room_ID) {
