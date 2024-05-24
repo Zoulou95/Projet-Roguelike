@@ -336,7 +336,8 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){ // room
             co_x == map->room[room_ID].co_room.x ||
             co_x == map->room[room_ID].co_room.x+width-1){
                 map->room[room_ID].data[co_y][co_x] = '#'; // room borders
-            } else {
+            }
+            else {
                 map->room[room_ID].data[co_y][co_x] = ' '; // blank space in the room
             }
         }
@@ -412,9 +413,4 @@ void display_room_view(PLAYER *player, MAP *map, int width, int height, int room
         printw("\n");
     }
     refresh(); // Rafraîchir l'affichage
-}
-
-int main(void){
-    
-    return 0;
 }
