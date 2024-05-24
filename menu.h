@@ -8,5 +8,6 @@
 FICHIER create_file();
 void print_menu(FICHIER file, int choice);
 void choice_menu(int choice);
+FICHIER create_file();
 
 #endif

@@ -65,6 +65,21 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         perror("Memory allocation error for the new room\n");
         exit(4);
     }
+    new_room->data = (char **)malloc(new_room->height * sizeof(char *));
+    if (new_room->data == NULL) {
+        perror("Memory allocation error for room data");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < new_room->height; i++) {
+        new_room->data[i] = (char *)malloc(new_room->width * sizeof(char));
+        if (new_room->data[i] == NULL) {
+            perror("Memory allocation error for room data");
+            exit(EXIT_FAILURE);
+        }
+        for (int j = 0; j < new_room->width; j++) {
+            new_room->data[i][j] = ' ';
+        }
+    }
     for(int i=0; i<MAX_DOOR; i++){ // init doors ID to -1
         new_room->door[i].closed=-1;
     }
@@ -134,35 +149,6 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     map->room[map->nb_rooms-1]=*new_room;
     return new_room;
 }
-
-// ROOM *createRoom(int width, int height, int x, int y) {
-//     ROOM *room = (ROOM *)malloc(sizeof(ROOM));
-//     if (room == NULL) {
-//         perror("Memory allocation error for the room\n");
-//         exit(EXIT_FAILURE);
-//     }
-//     room->width = width;
-//     room->height = height;
-//     room->co_room.x = x;
-//     room->co_room.y = y;
-//     room->explored = 0;
-//     room->data = (char **)malloc(height * sizeof(char *));
-//     for (int i = 0; i < height; i++) {
-//         room->data[i] = (char *)malloc(width * sizeof(char));
-//         for (int j = 0; j < width; j++) {
-//             if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
-//                 room->data[i][j] = '#'; // Borders
-//             } else {
-//                 room->data[i][j] = ' '; // Empty space
-//             }
-//         }
-//     }
-//     room->data[0][width / 2] = 'd'; // Door at the top
-//     room->data[height - 1][width / 2] = 'd'; // Door at the bottom
-//     room->data[height / 2][0] = 'd'; // Door on the left
-//     room->data[height / 2][width - 1] = 'd'; // Door on the right
-//     return room;
-// }
 
 int numberOfDoors(MAP *map){ // probability to create a new door
     switch (map->max_room-map->nb_rooms){
@@ -311,6 +297,20 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
         perror("Memory allocation error for the spawn\n");
         exit(5);
     }
+    spawn->data = (char **)malloc(spawn->height * sizeof(char *));
+    if (spawn->data == NULL){
+        perror("Memory allocation error for spawn data");
+        exit(EXIT_FAILURE);
+    for (int i = 0; i < spawn->height; i++) {
+        spawn->data[i] = (char *)malloc(spawn->width * sizeof(char));
+        if (spawn->data[i] == NULL) {
+            perror("Memory allocation error for spawn data");
+            exit(EXIT_FAILURE);
+        }
+        for (int j = 0; j < spawn->width; j++) {
+            spawn->data[i][j] = ' ';
+        }
+    }
     map->nb_rooms=1;
     spawn->room_ID=0;
     spawn->co_room.x=SPAWN_X;
@@ -377,42 +377,45 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
 //     endwin();
 // }
 
-void display_visible_rooms(PLAYER *player, MAP *map) {
-    clear();
-    ROOM *current_room = &map->room[player->current_room];
+// void display_visible_rooms(PLAYER *player, MAP *map) {
+//     clear();
+//     player->current_room=0;
+//     ROOM *current_room = &map->room[player->current_room];
 
-    int term_height, term_width;
-    getmaxyx(stdscr, term_height, term_width);
+//     current_room->co_room.x=5;
+//     current_room->co_room.y=6;
+    
+//     int term_height, term_width;
+//     getmaxyx(stdscr, term_height, term_width);
 
-    int start_y = (term_height - DISPLAY_HEIGHT) / 2;
-    int start_x = (term_width - DISPLAY_WIDTH) / 2;
+//     int start_y = (term_height - DISPLAY_HEIGHT) / 2;
+//     int start_x = (term_width - DISPLAY_WIDTH) / 2;
 
-    int offset_x = player->x - DISPLAY_WIDTH / 2;
-    int offset_y = player->y - DISPLAY_HEIGHT / 2;
+//     int offset_x = player->x - DISPLAY_WIDTH / 2;
+//     int offset_y = player->y - DISPLAY_HEIGHT / 2;
 
-    for (int i = 0; i < DISPLAY_HEIGHT; i++) {
-        for (int j = 0; j < DISPLAY_WIDTH; j++) {
-            int global_x = current_room->co_room.x * MAX_SIZE_ROOM_WIDTH + offset_x + j;
-            int global_y = current_room->co_room.y * MAX_SIZE_ROOM_HEIGHT + offset_y + i;
-
-            char c = ' ';
-            for (int k = 0; k < map->nb_rooms; k++) {
-                ROOM *room = &map->room[k];
-                int local_x = global_x - room->co_room.x * MAX_SIZE_ROOM_WIDTH;
-                int local_y = global_y - room->co_room.y * MAX_SIZE_ROOM_HEIGHT;
-                if (local_x >= 0 && local_x < room->width && local_y >= 0 && local_y < room->height) {
-                    if (local_x == player->x && local_y == player->y && k == player->current_room) {
-                        c = 'P';
-                    } else {
-                        c = room->data[local_y][local_x];
-                    }
-                }
-            }
-            mvprintw(start_y + i, start_x + j, "%c", c);
-        }
-    }
-    refresh();
-}
+//     for (int i = 0; i < DISPLAY_HEIGHT; i++) {
+//         for (int j = 0; j < DISPLAY_WIDTH; j++) {
+//             int global_x = current_room->co_room.x * MAX_SIZE_ROOM_WIDTH + offset_x + j;
+//             int global_y = current_room->co_room.y * MAX_SIZE_ROOM_HEIGHT + offset_y + i;
+//             char c = ' ';
+//             for (int k = 0; k < map->nb_rooms; k++) {
+//                 ROOM *room = &map->room[k];
+//                 int local_x = global_x - room->co_room.x * MAX_SIZE_ROOM_WIDTH;
+//                 int local_y = global_y - room->co_room.y * MAX_SIZE_ROOM_HEIGHT;
+//                 if (local_x >= 0 && local_x < room->width && local_y >= 0 && local_y < room->height) {
+//                     if (local_x == player->x && local_y == player->y && k == player->current_room) {
+//                         c = 'P';
+//                     } else {
+//                         c = room->data[local_y][local_x];
+//                     }
+//                 }
+//             }
+//             mvprintw(start_y + i, start_x + j, "%c", c);
+//         }
+//     }
+//     refresh();
+// }
 
 
 
@@ -420,31 +423,20 @@ void display_visible_rooms(PLAYER *player, MAP *map) {
 void Display_room(PLAYER *player, MAP *map, int room_ID, char location){ // room to display; location: door where you came from
     int width = map->room[room_ID].width;
     int height = map->room[room_ID].height;
-    ROOM *room=&map->room[room_ID];
-    room->data = (char **)malloc(height * sizeof(char *));
-    for (int i = 0; i < height; i++) {
-        room->data[i] = (char *)malloc(width * sizeof(char));
-        for (int j = 0; j < width; j++) {
-            if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
-                room->data[i][j] = '#'; // Borders
-            } else {
-                room->data[i][j] = ' '; // Empty space
+    map->room[room_ID].data[height][width];
+    int ch;
+
+    // init the room
+    for (int co_y=0; co_y < height; co_y++){
+        for (int co_x=0; co_x < width; co_x++) {
+            if (co_y == 0 || co_y == height-1 || co_x == 0 || co_x == width-1){
+                map->room[room_ID].data[co_y][co_x] = '#'; // room borders
+            }
+            else {
+                map->room[room_ID].data[co_y][co_x] = ' '; // blank space in the room
             }
         }
     }
-    int ch;
-
-    // // init the room
-    // for (int co_y=0; co_y < height; co_y++){
-    //     for (int co_x=0; co_x < width; co_x++) {
-    //         if (co_y == 0 || co_y == height-1 || co_x == 0 || co_x == width-1){
-    //             map->room[room_ID].data[co_y][co_x] = '#'; // room borders
-    //         }
-    //         else {
-    //             map->room[room_ID].data[co_y][co_x] = ' '; // blank space in the room
-    //         }
-    //     }
-    // }
 
     if(room_ID==0){
         player->y = map->room[room_ID].co_room.y+map->room[room_ID].height / 2; // player spawn at the middle of the spawn
@@ -478,7 +470,7 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){ // room
     }
     
     while (1) { // Boucle de jeu
-        display_visible_rooms(player, map); // vision 11x11 (dans gen.h modifiable)
+        display_room_view(player, map, width, height, room_ID); // vision 11x11 (dans gen.h modifiable)
         ch = getch(); //prend un charactère
         move_player(player, map, ch); // déplace le joueur avec la charactère
         if (ch == 27) { // escape pour quitter
@@ -496,26 +488,25 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){ // room
     endwin();
 }
 
+void display_room_view(PLAYER *player, MAP *map, int width, int height, int room_ID) { //fonction pour la vision
 
-// void display_room_view(PLAYER *player, MAP *map, int width, int height, int room_ID) { //fonction pour la vision
-
-//     clear();
-//     for (int i = 0; i < DISPLAY_HEIGHT; i++) { //affiche la longueur
-//         for (int j = 0; j < DISPLAY_WIDTH; j++) { //affiche la largeur
-//             int y = player->y - DISPLAY_HEIGHT / 2 + i; //les coordonnées y pour que ça soit centré
-//             int x = player->x - DISPLAY_WIDTH / 2 + j; //les coordonnées x pour que ça soit centré
-//             if (y >= 0 && y < height && x >= 0 && x < width) { // boucle pour afficher le tout
-//                 if (y == player->y && x == player->x) {
-//                     printw("P"); // Afficher le joueur
-//                 }
-//                 else {
-//                     printw("%c", map->room[room_ID].data[y][x]); // Afficher les bordures et les espaces vides
-//                 }
-//             } else {
-//                 printw(" "); // Afficher un espace pour les cases hors de la salle
-//             }
-//         }
-//         printw("\n");
-//     }
-//     refresh(); // Rafraîchir l'affichage
-// }
+    clear();
+    for (int i = 0; i < DISPLAY_HEIGHT; i++) { //affiche la longueur
+        for (int j = 0; j < DISPLAY_WIDTH; j++) { //affiche la largeur
+            int y = player->y - DISPLAY_HEIGHT / 2 + i; //les coordonnées y pour que ça soit centré
+            int x = player->x - DISPLAY_WIDTH / 2 + j; //les coordonnées x pour que ça soit centré
+            if (y >= 0 && y < height && x >= 0 && x < width) { // boucle pour afficher le tout
+                if (y == player->y && x == player->x) {
+                    printw("P"); // Afficher le joueur
+                }
+                else {
+                    printw("%c", map->room[room_ID].data[y][x]); // Afficher les bordures et les espaces vides
+                }
+            } else {
+                printw(" "); // Afficher un espace pour les cases hors de la salle
+            }
+        }
+        printw("\n");
+    }
+    refresh(); // Rafraîchir l'affichage
+}

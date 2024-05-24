@@ -17,7 +17,6 @@ int createBottomDoor(MAP *map, ROOM *room);
 void createDoors(MAP *map, ROOM *room, char existing_door);
 ROOM *Spawn(MAP *map);
 void Display_room(PLAYER *player, MAP *map, int room_ID, char location);
-// void display_room_view(PLAYER *player, MAP *map, int width, int height, int room_ID);
-// void Display_room(PLAYER *player, MAP *map, int room_ID, char location);
-void display_visible_rooms(PLAYER *player, MAP *map);
+void display_room_view(PLAYER *player, MAP *map, int width, int height, int room_ID);
+// void display_visible_rooms(PLAYER *player, MAP *map);
 #endif
