@@ -21,6 +21,7 @@ MAP *create_map(){
     // int seed;
     // give_seed(&seed); // ask the seed
     // srand(seed); // init random on the seed
+    srand(5);
     MAP *map = (MAP *)malloc(sizeof(MAP)); // memory allocation for the map
     if (map == NULL) { // security
         perror("Memory allocation error for the map\n");
