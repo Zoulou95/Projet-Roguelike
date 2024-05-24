@@ -32,7 +32,11 @@ MAP *create_map(){
         perror("Memory allocation error for the map rooms\n");
         exit(3);
     }
-    PLAYER *player;
+    PLAYER *player = (PLAYER *)malloc(sizeof(PLAYER));  // Initialize player
+    if (player == NULL) {
+        perror("Memory allocation error for player\n");
+        exit(4);
+    }
     player->current_room=0;
     map->room[0]=*Spawn(map);
     player->y = map->room[0].co_room.y+map->room[0].height / 2; // player spawn at the middle of the spawn
@@ -65,7 +69,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     ROOM *new_room=(ROOM *)malloc(sizeof(ROOM)); // memory allocation for the new room
     if (new_room==NULL) { // security
         perror("Memory allocation error for the new room\n");
-        exit(4);
+        exit(5);
     }
     for(int i=0; i<MAX_DOOR; i++){ // init doors ID to -1
         new_room->door[i].closed=-1;
@@ -282,7 +286,7 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
     ROOM *spawn=malloc(sizeof(ROOM)); // memory allocation for the spawn
     if(spawn==NULL){
         perror("Memory allocation error for the spawn\n");
-        exit(5);
+        exit(6);
     }
     spawn->data = (char **)malloc(spawn->height * sizeof(char *));
     if (spawn->data == NULL){
