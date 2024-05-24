@@ -34,7 +34,7 @@ MAP *create_map(){
     }
     PLAYER *player;
     map->room[0]=*Spawn(map);
-    Display_room(&player, map, 0, 0);
+    Display_room(player, map, 0, 0);
     map->room[0].data[map->room[0].door[LEFT].co_door.y][map->room[0].door[LEFT].co_door.x]='d';
     map->room[0].data[map->room[0].door[RIGHT].co_door.y][map->room[0].door[RIGHT].co_door.x]='d';
     map->room[0].data[map->room[0].door[TOP].co_door.y][map->room[0].door[TOP].co_door.x]='d';
@@ -377,7 +377,7 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){ // room
     while (1) { // Boucle de jeu
         display_room_view(player, map, width, height, room_ID); // vision 11x11 (dans gen.h modifiable)
         ch = getch(); //prend un charactère
-        move_player(player, map->room[room_ID].data, ch); // déplace le joueur avec la charactère
+        move_player(player, map, ch); // déplace le joueur avec la charactère
         if (ch == 27) { // escape pour quitter
             clear(); //clear le terminal sinon ça se superpose avec le menu
             refresh(); //rafraîchit le terminal sinon ça change pas
@@ -403,7 +403,8 @@ void display_room_view(PLAYER *player, MAP *map, int width, int height, int room
             if (y >= 0 && y < height && x >= 0 && x < width) { // boucle pour afficher le tout
                 if (y == player->y && x == player->x) {
                     printw("P"); // Afficher le joueur
-                } else {
+                }
+                else {
                     printw("%c", map->room[room_ID].data[y][x]); // Afficher les bordures et les espaces vides
                 }
             } else {

@@ -20,6 +20,7 @@
 #define SPAWN_Y 0
 #define MAX_ROOM 20
 #define MIN_ROOM 15
+#define maxMenu 3
 #define CHECK 10
 
 typedef struct{ // structure for coordinates
@@ -55,5 +56,10 @@ typedef struct {
     int y;
     int current_room;
 } PLAYER;
+
+typedef struct{ // crÃ©er un fichier pour retourner plusieurs variables dans les fonctions
+    FILE * fp;
+    char menu[maxMenu][20];
+}FICHIER;
 
 #endif

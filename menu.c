@@ -25,24 +25,16 @@ void choice_menu(int choice){
         clear();
         // Créer une carte
         MAP *map = create_map();
-
-        // Créer un joueur
-        PLAYER player;
-
-        // Afficher la salle avec le joueur
-        Display_room(&player, map, 0);
-        
-        // Libérer la mémoire allouée pour la carte
-        free(map->room);
-        free(map);
     }
-    if(choice == 2){
+
+    else if(choice == 2){
+
         endwin();
         exit(EXIT_SUCCESS);
     }
 }
 
-void print_menu(FICHIER file, int *choice){ 
+void print_menu(FICHIER file, int choice){ 
     initscr(); // initialiser ncurses
     noecho(); // ne pas montrer l'input de l'utilisateur car sans ça sur la fenêtre il y aurait des 'z' et 's' partout
     cbreak(); // lire les touches immédiatement sans appuyer sur espace

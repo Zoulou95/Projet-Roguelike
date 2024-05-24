@@ -1,8 +1,9 @@
 #ifndef GEN_H 
 #define GEN_H 
 #include "struct.h"
+#include "player.h"
 
-void give_seed(int *seed);
+// void give_seed(int *seed);
 int getMaxRooms();
 MAP *create_map();
 int isSpaceAvailable(MAP *map, ROOM *new_room);
@@ -14,8 +15,7 @@ int createTopDoor(MAP *map, ROOM *room);
 int createBottomDoor(MAP *map, ROOM *room);
 void createDoors(MAP *map, ROOM *room, char existing_door);
 ROOM *Spawn(MAP *map);
-void display_room_view(PLAYER *player, MAP *map, int width, int height, int room_ID);
-void move_player(PLAYER *player, MAP *map, int ch);
 void Display_room(PLAYER *player, MAP *map, int room_ID, char location);
+void display_room_view(PLAYER *player, MAP *map, int width, int height, int room_ID);
 
 #endif
