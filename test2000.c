@@ -207,6 +207,8 @@ void display_visible_rooms(PLAYER *player, MAP *map) {
                 }
             }
             mvprintw(start_y + i, start_x + j, "%c", c);
+            mvprintw(0, DISPLAY_WIDTH, "%d,%d", start_y + i, start_x +j );
+            refresh();
         }
     }
     refresh();

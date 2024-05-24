@@ -23,11 +23,6 @@ MAP *create_map(){
     // give_seed(&seed); // ask the seed
     // srand(seed); // init random on the seed
     srand(5);
-    PLAYER *player = (PLAYER *)malloc(sizeof(PLAYER));  // Initialize player
-    if (player == NULL) {
-        perror("Memory allocation error for player\n");
-        exit(4);
-    }
     MAP *map = (MAP *)malloc(sizeof(MAP)); // memory allocation for the map
     if (map == NULL) { // security
         perror("Memory allocation error for the map\n");
@@ -39,15 +34,16 @@ MAP *create_map(){
         perror("Memory allocation error for the map rooms\n");
         exit(3);
     }
+    PLAYER *player = (PLAYER *)malloc(sizeof(PLAYER));  // Initialize player
+    if (player == NULL) {
+        perror("Memory allocation error for player\n");
+        exit(4);
+    }
     player->current_room=0;
     map->room[0]=*Spawn(map);
     player->y = map->room[0].co_room.y+map->room[0].height / 2; // player spawn at the middle of the spawn
     player->x = map->room[0].co_room.x+map->room[0].width / 2;
     Display_room(player, map, 0, 0);
-    map->room[0].data[map->room[0].door[LEFT].co_door.y][map->room[0].door[LEFT].co_door.x]='d';
-    map->room[0].data[map->room[0].door[RIGHT].co_door.y][map->room[0].door[RIGHT].co_door.x]='d';
-    map->room[0].data[map->room[0].door[TOP].co_door.y][map->room[0].door[TOP].co_door.x]='d';
-    map->room[0].data[map->room[0].door[BOTTOM].co_door.y][map->room[0].door[BOTTOM].co_door.x]='d';
     return map;
 }
 
@@ -319,25 +315,25 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
         switch(i){ // create the 4 doors for the spawn
         case 0: // left
             spawn->door[i].co_door.x=spawn->co_room.x;
-            spawn->door[i].co_door.y=spawn->co_room.y+MAX_SIZE_ROOM_HEIGHT;
+            spawn->door[i].co_door.y=(spawn->co_room.y+MAX_SIZE_ROOM_HEIGHT)/2;
             spawn->door[i].location='l';
             createRoom(map, spawn, spawn->door[i].location);
             break;
         case 1: // right
-            spawn->door[i].co_door.x=spawn->co_room.x+spawn->width;
-            spawn->door[i].co_door.y=spawn->co_room.y+MAX_SIZE_ROOM_HEIGHT;
+            spawn->door[i].co_door.x=spawn->co_room.x+spawn->width-1;
+            spawn->door[i].co_door.y=(spawn->co_room.y+MAX_SIZE_ROOM_HEIGHT)/2;
             spawn->door[i].location='r';
             createRoom(map, spawn, spawn->door[i].location);
             break;
         case 2: // top
-            spawn->door[i].co_door.x=spawn->co_room.x+MAX_SIZE_ROOM_WIDTH;
+            spawn->door[i].co_door.x=(spawn->co_room.x+MAX_SIZE_ROOM_WIDTH)/2;
             spawn->door[i].co_door.y=spawn->co_room.y;
             spawn->door[i].location='t';
             createRoom(map, spawn, spawn->door[i].location);
             break;
         case 3: // bottom
-            spawn->door[i].co_door.x=spawn->co_room.x+MAX_SIZE_ROOM_WIDTH;
-            spawn->door[i].co_door.y=spawn->co_room.y+spawn->height;
+            spawn->door[i].co_door.x=(spawn->co_room.x+MAX_SIZE_ROOM_WIDTH)/2;
+            spawn->door[i].co_door.y=spawn->co_room.y+spawn->height-1;
             spawn->door[i].location='b';
             createRoom(map, spawn, spawn->door[i].location);
             break;
@@ -413,7 +409,44 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
 // }
 
 
-
+void initRoom(MAP *map, int room_ID, int height, int width, char location){
+    if(room_ID==0){
+        for (int co_y=0; co_y < height; co_y++){
+            for (int co_x=0; co_x < width; co_x++) { //
+                if((co_y==height/2 && co_x==0) ||
+                (co_y==height/2 && co_x==width-1) ||
+                (co_y==0 && co_x==width/2) ||
+                (co_y==height-1 && co_x==width/2)){
+                    map->room[room_ID].data[co_y][co_x] = 'd';
+                }
+                else if (co_y == 0 || co_y == height-1 || co_x == 0 || co_x == width-1){
+                    map->room[room_ID].data[co_y][co_x] = '#';// room borders
+                }
+                else {
+                    map->room[room_ID].data[co_y][co_x] = ' '; // blank space in the room
+                }
+            }
+        }
+    }
+    else{
+        for (int co_y=0; co_y < height; co_y++){
+            for (int co_x=0; co_x < width; co_x++) { //
+                if((co_y==height/2 && co_x==0) ||
+                (co_y==height/2 && co_x==width-1) ||
+                (co_y==0 && co_x==width/2) ||
+                (co_y==height-1 && co_x==width/2)){
+                    map->room[room_ID].data[co_y][co_x] = 'd';
+                }
+                else if (co_y == 0 || co_y == height-1 || co_x == 0 || co_x == width-1){
+                    map->room[room_ID].data[co_y][co_x] = '#';// room borders
+                }
+                else {
+                    map->room[room_ID].data[co_y][co_x] = ' '; // blank space in the room
+                }
+            }
+        }
+    }
+}
 
 void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
     int width = map->room[room_ID].width;
@@ -437,13 +470,21 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
     int ch;
 
     // init the room
-    for (int co_y=0; co_y < height; co_y++){
-        for (int co_x=0; co_x < width; co_x++) {
-            if (co_y == 0 || co_y == height-1 || co_x == 0 || co_x == width-1){
-                map->room[room_ID].data[co_y][co_x] = '#'; // room borders
-            }
-            else {
-                map->room[room_ID].data[co_y][co_x] = ' '; // blank space in the room
+    if(room_ID==0){
+        for (int co_y=0; co_y < height; co_y++){
+            for (int co_x=0; co_x < width; co_x++) { //
+                if((co_y==height/2 && co_x==0) ||
+                (co_y==height/2 && co_x==width-1) ||
+                (co_y==0 && co_x==width/2) ||
+                (co_y==height-1 && co_x==width/2)){
+                    map->room[room_ID].data[co_y][co_x] = 'd';
+                }
+                else if (co_y == 0 || co_y == height-1 || co_x == 0 || co_x == width-1){
+                    map->room[room_ID].data[co_y][co_x] = '#';// room borders
+                }
+                else {
+                    map->room[room_ID].data[co_y][co_x] = ' '; // blank space in the room
+                }
             }
         }
     }
@@ -505,7 +546,8 @@ void display_room_view(PLAYER *player, MAP *map, int width, int height, int room
                     printw("P"); // Afficher le joueur
                 }
                 else {
-                    printw("%c", map->room[room_ID].data[y][x]); // Afficher les bordures et les espaces vides
+                    printw("%c", map->room[0].data[y][x]); // Afficher les bordures et les espaces vides
+                    printw("(%d, %d)", y, x);
                 }
             } else {
                 printw(" "); // Afficher un espace pour les cases hors de la salle
