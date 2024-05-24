@@ -65,21 +65,6 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         perror("Memory allocation error for the new room\n");
         exit(4);
     }
-    new_room->data = (char **)malloc(new_room->height * sizeof(char *));
-    if (new_room->data == NULL) {
-        perror("Memory allocation error for room data");
-        exit(EXIT_FAILURE);
-    }
-    for (int i = 0; i < new_room->height; i++) {
-        new_room->data[i] = (char *)malloc(new_room->width * sizeof(char));
-        if (new_room->data[i] == NULL) {
-            perror("Memory allocation error for room data");
-            exit(EXIT_FAILURE);
-        }
-        for (int j = 0; j < new_room->width; j++) {
-            new_room->data[i][j] = ' ';
-        }
-    }
     for(int i=0; i<MAX_DOOR; i++){ // init doors ID to -1
         new_room->door[i].closed=-1;
     }
@@ -423,6 +408,21 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
 void Display_room(PLAYER *player, MAP *map, int room_ID, char location){ // room to display; location: door where you came from
     int width = map->room[room_ID].width;
     int height = map->room[room_ID].height;
+    room->data = (char **)malloc(room->height * sizeof(char *));
+    if (room->data == NULL) {
+        perror("Memory allocation error for room data");
+        exit(EXIT_FAILURE);
+    }
+    for (int i = 0; i < room->height; i++) {
+        room->data[i] = (char *)malloc(room->width * sizeof(char));
+        if (room->data[i] == NULL) {
+            perror("Memory allocation error for room data");
+            exit(EXIT_FAILURE);
+        }
+        for (int j = 0; j < room->width; j++) {
+            room->data[i][j] = ' ';
+        }
+    }
     map->room[room_ID].data[height][width];
     int ch;
 
