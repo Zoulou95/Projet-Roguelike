@@ -347,10 +347,10 @@ void initRoom(MAP *map, int room_ID, int height, int width, char location){
     if(room_ID==0){ // init spawn
         for (int y=0; y < height; y++){
             for (int x=0; x < width; x++) {
-                if((y==10 && x==0) || // create the left door
-                (y==10 && x==width-1) || // create the right door
-                (y==0 && x==10) || //  create the top door
-                (y==height-1 && x==10)){ // create the bottom door
+                if((y==height/2 && x==0) || // create the left door
+                (y==height/2 && x==width-1) || // create the right door
+                (y==0 && x==width/2) || //  create the top door
+                (y==height-1 && x==width/2)){ // create the bottom door
                     map->room[room_ID].data[y][x] = 'd';
                 }
                 else if (y == 0 || y == height-1 || x == 0 || x == width-1){
