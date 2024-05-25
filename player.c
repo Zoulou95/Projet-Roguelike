@@ -16,16 +16,16 @@ int find_player_room(MAP *map, PLAYER *player) {
 void teleport(PLAYER *player, MAP *map, int room_ID, char location){
     switch(location){
     case 'l':
-        player->x=map->room[room_ID].co_room.x-2;
+        player->x=player->x-2;
         break;
     case 'r':
-        player->x=map->room[room_ID].co_room.x+2;
+        player->x=player->x+2;
         break;
     case 't':
-        player->y=map->room[room_ID].co_room.y-2;
+        player->y=player->y-2;
         break;
     case 'b':
-        player->y=map->room[room_ID].co_room.y+2;
+        player->y=player->y+2;
         break;
     default:
         break;
@@ -33,11 +33,10 @@ void teleport(PLAYER *player, MAP *map, int room_ID, char location){
 }
 
 void move_player(PLAYER *player, MAP *map, int ch) {
-    player->current_room=find_player_room(map, player);
+    // player->current_room=find_player_room(map, player);
     ROOM *room = &map->room[player->current_room];
     int new_x = player->x;
     int new_y = player->y;
-
     switch (ch) {
         case 'z':
             new_y--;
@@ -51,21 +50,31 @@ void move_player(PLAYER *player, MAP *map, int ch) {
         case 'd':
             new_x++;
             break;
+        default:
+            return;
+            break;
     }
 
     // Check if the new position is within the room boundaries
-    if (new_x >= room->co_room.x && new_x < room->co_room.x+room->width && new_y >= room->co_room.y && new_y < room->co_room.y+room->height) {
+    int height=room->height;
+    int width=room->width;
+    int room_y=room->co_room.y;
+    int room_x=room->co_room.x;
+    if (new_x >= room_x && new_x < room_x+width && new_y >= room_y && new_y < room_y+height) {
         if (room->data[new_y][new_x] == 'd') {
             for(int i=0; i<MAX_DOOR; i++){
-                if(room->door[i].gap+room->co_room.x==new_x && room->door[i].gap+room->co_room.y==new_y){
+                if((new_y==0 && new_x==room->door[i].gap_x) ||
+                (new_y==height-1 && new_x==room->door[i].gap_x) ||
+                (new_y==room->door[i].gap_y && new_x==0) ||
+                (new_y==room->door[i].gap_y && new_x==width-1)){
                     if(room->door[i].closed==0){
                         teleport(player, map, map->room[player->current_room].room_ID, room->door[i].location);
-                        player->current_room=find_player_room(map, player);
+                        player->current_room=room->door[i].track;
                         break;
                     }
                     else if(room->door[i].closed==1){
                         teleport(player, map, map->room[player->current_room].room_ID, room->door[i].location);
-                        player->current_room=find_player_room(map, player);
+                        player->current_room=room->door[i].track;
                         Display_room(player, map, map->room[player->current_room].room_ID, room->door[i].location);
                         room->door[i].closed=0;
                         break;

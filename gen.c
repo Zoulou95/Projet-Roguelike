@@ -86,35 +86,45 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     int gap; // variable for the position of the door in the wall
     switch (location){ // create the position of the room depending of previous room and door location
     case 'l': // new room location at the left and first door initialized
-        new_room->door[RIGHT].gap=1+rand()%(new_room->height-2);
-        new_room->door[RIGHT].closed=1;
+        new_room->door[RIGHT].gap_y=1+rand()%(new_room->height-2);
+        new_room->door[RIGHT].gap_x=0;
+        new_room->door[RIGHT].closed=0;
         new_room->door[RIGHT].location='r';
         new_room->co_room.x=prev_room->co_room.x-new_room->width;
-        new_room->co_room.y=prev_room->co_room.y+prev_room->door[LEFT].gap-gap;
+        new_room->co_room.y=prev_room->co_room.y+prev_room->door[LEFT].gap_y-gap;
         prev_room->door[LEFT].track=new_room->room_ID;
-        new_room->door[RIGHT].track=prev_room->room_ID; // (MODIF)
+        new_room->door[RIGHT].track=prev_room->room_ID;
         // initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[RIGHT].location); (MODIF)
         break;
     case 'r': // new room location at the right and first door initialized
-        new_room->door[LEFT].gap=1+rand()%(new_room->height-2);
-        new_room->door[LEFT].closed=1;
+        new_room->door[LEFT].gap_y=1+rand()%(new_room->height-2);
+        new_room->door[LEFT].gap_x=0;
+        new_room->door[LEFT].closed=0;
         new_room->door[LEFT].location='l';
         new_room->co_room.x=prev_room->co_room.x+prev_room->width;
-        new_room->co_room.y=prev_room->co_room.y+prev_room->door[RIGHT].gap-gap;
+        new_room->co_room.y=prev_room->co_room.y+prev_room->door[RIGHT].gap_y-gap;
+        prev_room->door[RIGHT].track=new_room->room_ID;
+        new_room->door[LEFT].track=prev_room->room_ID;
         break;
     case 't': // new room location at the top and first door initialized
-        new_room->door[BOTTOM].gap=1+rand()%(new_room->width-2);
-        new_room->door[BOTTOM].closed=1;
+        new_room->door[BOTTOM].gap_x=1+rand()%(new_room->width-2);
+        new_room->door[BOTTOM].gap_y=0;
+        new_room->door[BOTTOM].closed=0;
         new_room->door[BOTTOM].location='b';
-        new_room->co_room.x=prev_room->co_room.x+prev_room->door[TOP].gap-gap;
+        new_room->co_room.x=prev_room->co_room.x+prev_room->door[TOP].gap_x-gap;
         new_room->co_room.y=prev_room->co_room.y-new_room->height;
+        prev_room->door[TOP].track=new_room->room_ID;
+        new_room->door[BOTTOM].track=prev_room->room_ID;
         break;
     case 'b': // new room location at the bottom and first door initialized
-        new_room->door[TOP].gap=1+rand()%(new_room->width-2);
-        new_room->door[TOP].closed=1;
+        new_room->door[TOP].gap_x=1+rand()%(new_room->width-2);
+        new_room->door[TOP].gap_y=0;
+        new_room->door[TOP].closed=0;
         new_room->door[TOP].location='t';
-        new_room->co_room.x=prev_room->co_room.x+prev_room->door[BOTTOM].gap-gap;
+        new_room->co_room.x=prev_room->co_room.x+prev_room->door[BOTTOM].gap_x-gap;
         new_room->co_room.y=prev_room->co_room.y+new_room->height;
+        prev_room->door[BOTTOM].track=new_room->room_ID;
+        new_room->door[TOP].track=prev_room->room_ID;
         break;
     default:
         break;
@@ -148,7 +158,8 @@ int numberOfDoors(MAP *map){ // probability to create a new door
 }
 
 int createLeftDoor(MAP *map, ROOM *room){
-    room->door[LEFT].gap=1+rand()%(room->height-2);
+    room->door[LEFT].gap_y=1+rand()%(room->height-2);
+    room->door[LEFT].gap_x=0;
     ROOM *new_room;
     for(int i=0; i<CHECK; i++){
         new_room=createRoom(map, room, 'l');
@@ -156,14 +167,15 @@ int createLeftDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[LEFT].closed=1;
             room->door[LEFT].location='l';
-            room->data[room->door[LEFT].gap][0]='d'; // (DANGER)
+            room->data[room->door[LEFT].gap_y][0]='d'; // (DANGER)
             return 1; // success
         }
     }
     return 0; // failure
 }
 int createRightDoor(MAP *map, ROOM *room){
-    room->door[RIGHT].gap=1+rand()%(room->height-2);
+    room->door[RIGHT].gap_y=1+rand()%(room->height-2);
+    room->door[RIGHT].gap_x=0;
     ROOM *new_room;
     for(int i=0; i<CHECK; i++){
         new_room=createRoom(map, room, 'r');
@@ -171,14 +183,15 @@ int createRightDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[RIGHT].closed=1;
             room->door[RIGHT].location='r';
-            room->data[room->door[RIGHT].gap][room->width-1]='d';
+            room->data[room->door[RIGHT].gap_y][room->width-1]='d';
             return 1; // success
         }
     }
     return 0; // failure
 }
 int createTopDoor(MAP *map, ROOM *room){
-    room->door[TOP].gap=1+rand()%(room->width-2);
+    room->door[TOP].gap_x=1+rand()%(room->width-2);
+    room->door[TOP].gap_y=0;
     ROOM *new_room;
     for(int i=0; i<CHECK; i++){
         new_room=createRoom(map, room, 't');
@@ -186,14 +199,15 @@ int createTopDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[TOP].closed=1;
             room->door[TOP].location='t';
-            room->data[0][room->door[TOP].gap]='d';
+            room->data[0][room->door[TOP].gap_x]='d';
             return 1; // success
         }
     }
     return 0; // failure
 }
 int createBottomDoor(MAP *map, ROOM *room){
-    room->door[BOTTOM].gap=1+rand()%(room->width-2);
+    room->door[BOTTOM].gap_x=1+rand()%(room->width-2);
+    room->door[BOTTOM].gap_y=0;
     ROOM *new_room;
     for(int i=0; i<CHECK; i++){
         new_room=createRoom(map, room, 'b');
@@ -201,7 +215,7 @@ int createBottomDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[BOTTOM].closed=1;
             room->door[BOTTOM].location='b';
-            room->data[room->height-1][room->door[BOTTOM].gap]='d';
+            room->data[room->height-1][room->door[BOTTOM].gap_x]='d';
             return 1; // success
         }
     }
@@ -276,38 +290,31 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
         switch(i){ // create the 4 doors for the spawn
         case 0: // left
             spawn->door[i].location='l';
-            spawn->door[i].gap=spawn->height/2;
+            spawn->door[i].gap_y=spawn->height/2;
+            spawn->door[i].gap_x=0;
             createRoom(map, spawn, spawn->door[i].location);
             break;
         case 1: // right
             spawn->door[i].location='r';
-            spawn->door[i].gap=spawn->height/2;
+            spawn->door[i].gap_y=spawn->height/2;
+            spawn->door[i].gap_x=0;
             createRoom(map, spawn, spawn->door[i].location);
             break;
         case 2: // top
             spawn->door[i].location='t';
-            spawn->door[i].gap=spawn->width/2;
+            spawn->door[i].gap_x=spawn->width/2;
+            spawn->door[i].gap_y=0;
             createRoom(map, spawn, spawn->door[i].location);
             break;
         case 3: // bottom
             spawn->door[i].location='b';
-            spawn->door[i].gap=spawn->width/2;
+            spawn->door[i].gap_x=spawn->width/2;
+            spawn->door[i].gap_y=0;
             createRoom(map, spawn, spawn->door[i].location);
             break;
         default:
             break;
         }
-    }
-    printw("%d\n",map->room[0].width);
-    if (!map->room[0].data) {
-        printw("000000Error: Invalid map data.\n");
-        refresh();
-        exit(8);
-    }
-    if (!spawn->data) {
-        printw("Errooooor: Invalid map data.\n");
-        refresh();
-        exit(9);
     }
     return spawn;
 }
@@ -365,16 +372,16 @@ void initRoom(MAP *map, int room_ID, int height, int width, char location){
         }
         switch(location){
         case 'l':
-            map->room[room_ID].data[map->room[room_ID].door[LEFT].gap][0] = 'd';
+            map->room[room_ID].data[map->room[room_ID].door[LEFT].gap_y][0] = 'd';
             break;
         case 'r':
-            map->room[room_ID].data[map->room[room_ID].door[RIGHT].gap][width-1] = 'd';
+            map->room[room_ID].data[map->room[room_ID].door[RIGHT].gap_y][width-1] = 'd';
             break;
         case 't':
-            map->room[room_ID].data[0][map->room[room_ID].door[TOP].gap] = 'd';
+            map->room[room_ID].data[0][map->room[room_ID].door[TOP].gap_x] = 'd';
             break;
         case 'b':
-            map->room[room_ID].data[height-1][map->room[room_ID].door[BOTTOM].gap] = 'd';
+            map->room[room_ID].data[height-1][map->room[room_ID].door[BOTTOM].gap_x] = 'd';
             break;
         default:
             break;

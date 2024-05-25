@@ -30,7 +30,8 @@ typedef struct{ // structure for coordinates
 typedef struct{
     int closed; // door ID
     char location;
-    int gap;
+    int gap_x;
+    int gap_y;
     int track;
 }DOOR;
 
@@ -59,7 +60,7 @@ typedef struct {
     int current_room;
 } PLAYER;
 
-typedef struct{ // crÃ©er un fichier pour retourner plusieurs variables dans les fonctions
+typedef struct{ // créer un fichier pour retourner plusieurs variables dans les fonctions
     FILE * fp;
     char menu[maxMenu][20];
 }FICHIER;
