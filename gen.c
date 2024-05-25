@@ -23,7 +23,7 @@ MAP *create_map(){
     // give_seed(&seed); // ask the seed
     // srand(seed); // init random on the seed
     srand(5);
-    MAP *map = (MAP *)malloc(sizeof(MAP)); // memory allocation for the map (MODIF) on doit vrm le faire ?
+    MAP *map = (MAP *)malloc(sizeof(MAP)); // memory allocation for the map
     if (map == NULL) { // security
         perror("Memory allocation error for the map\n");
         exit(2);
@@ -46,7 +46,7 @@ MAP *create_map(){
     *Spawn(map);
     player->y = map->room[0].co_room.y+map->room[0].height / 2; // player spawn at the middle of the spawn
     player->x = map->room[0].co_room.x+map->room[0].width / 2;
-    Display_room(player, map, 0, 0); // (MODIF)
+    Display_room(player, map, 0); // (MODIF)
     
     return map;
 }
@@ -396,7 +396,7 @@ void initRoom(MAP *map, int room_ID, int height, int width, char location){
     }
 }
 
-void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
+void Display_room(PLAYER *player, MAP *map, int room_ID){
     int width = map->room[room_ID].width;
     int height = map->room[room_ID].height;
     int ch;

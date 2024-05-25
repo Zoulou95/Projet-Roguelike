@@ -87,7 +87,7 @@ void move_player(PLAYER *player, MAP *map, int ch) {
                         }
                         room->door[i].closed=0;
                         createDoors(map, &map->room[room->door[i].track], room->door[i].location);
-                        Display_room(player, map, room->door[i].track, room->door[i].location);
+                        Display_room(player, map, room->door[i].track);
                         break;
                     }
                 }
