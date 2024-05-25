@@ -31,6 +31,7 @@ typedef struct{
     int closed; // door ID
     char location;
     int gap;
+    int track;
 }DOOR;
 
 typedef struct{

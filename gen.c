@@ -43,7 +43,7 @@ MAP *create_map(){
     map->room[0]=*Spawn(map);
     player->y = map->room[0].co_room.y+map->room[0].height / 2; // player spawn at the middle of the spawn
     player->x = map->room[0].co_room.x+map->room[0].width / 2;
-    Display_room(player, map, 0, 0);
+    // Display_room(player, map, 0, 0); // (MODIF)
     return map;
 }
 
@@ -71,6 +71,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     }
     for(int i=0; i<MAX_DOOR; i++){ // init doors ID to -1
         new_room->door[i].closed=-1;
+        new_room->door[i].track=-1;
     }
     new_room->explored=0;
     new_room->doors=1;
@@ -86,6 +87,8 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->door[RIGHT].location='r';
         new_room->co_room.x=prev_room->co_room.x-new_room->width;
         new_room->co_room.y=prev_room->co_room.y+prev_room->door[LEFT].gap-gap;
+        prev_room->door[LEFT].track=new_room->room_ID;
+        new_room->door[RIGHT].track=prev_room->room_ID; // (MODIF)
         // initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[RIGHT].location); (MODIF)
         break;
     case 'r': // new room location at the right and first door initialized
