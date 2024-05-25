@@ -68,7 +68,7 @@ int isSpaceAvailable(MAP *map, ROOM *new_room){
 }
 
 ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
-    ROOM *new_room=(ROOM *)malloc(sizeof(ROOM)); // memory allocation for the new room
+    ROOM *new_room=&map->room[map->nb_rooms]; // memory allocation for the new room
     if (new_room==NULL) { // security
         perror("Memory allocation error for the new room\n");
         exit(5);
