@@ -152,7 +152,7 @@ int createLeftDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[LEFT].closed=1;
             room->door[LEFT].location='l';
-            room->data[room->door[LEFT].gap][0]='d';
+            room->data[room->door[LEFT].gap][0]='d'; // (DANGER)
             return 1; // success
         }
     }
