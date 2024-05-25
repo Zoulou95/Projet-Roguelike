@@ -74,7 +74,17 @@ void move_player(PLAYER *player, MAP *map, int ch) {
                     }
                     else if(room->door[i].closed==1){
                         teleport(player, map, map->room[player->current_room].room_ID, room->door[i].location);
+                        if (!map->room[player->current_room].data) {
+                            printw("before\n");
+                            refresh();
+                            exit(-5);
+                        }
                         player->current_room=room->door[i].track;
+                        if (!map->room[player->current_room].data) {
+                            printw("after_\n");
+                            refresh();
+                            exit(-5);
+                        }
                         Display_room(player, map, map->room[player->current_room].room_ID, room->door[i].location);
                         room->door[i].closed=0;
                         break;

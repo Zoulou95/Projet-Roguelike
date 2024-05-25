@@ -59,7 +59,7 @@ int isSpaceAvailable(MAP *map, ROOM *new_room){
               new_room->co_room.x >= existingRoom.co_room.x + existingRoom.width || 
               new_room->co_room.y + new_room->height <= existingRoom.co_room.y || 
               new_room->co_room.y >= existingRoom.co_room.y + existingRoom.height)){
-            free(new_room); // purge the new_room since it failed
+            free(new_room->data); // purge the new_room since it failed
             map->nb_rooms--; // total numbers of rooms -1
             return 0; // false
         }
@@ -94,7 +94,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->co_room.y=prev_room->co_room.y+prev_room->door[LEFT].gap_y-gap;
         prev_room->door[LEFT].track=new_room->room_ID;
         new_room->door[RIGHT].track=prev_room->room_ID;
-        // initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[RIGHT].location); (MODIF)
+        initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[RIGHT].location);
         break;
     case 'r': // new room location at the right and first door initialized
         new_room->door[LEFT].gap_y=1+rand()%(new_room->height-2);
@@ -105,6 +105,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->co_room.y=prev_room->co_room.y+prev_room->door[RIGHT].gap_y-gap;
         prev_room->door[RIGHT].track=new_room->room_ID;
         new_room->door[LEFT].track=prev_room->room_ID;
+        initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[LEFT].location);
         break;
     case 't': // new room location at the top and first door initialized
         new_room->door[BOTTOM].gap_x=1+rand()%(new_room->width-2);
@@ -115,6 +116,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->co_room.y=prev_room->co_room.y-new_room->height;
         prev_room->door[TOP].track=new_room->room_ID;
         new_room->door[BOTTOM].track=prev_room->room_ID;
+        initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[BOTTOM].location);
         break;
     case 'b': // new room location at the bottom and first door initialized
         new_room->door[TOP].gap_x=1+rand()%(new_room->width-2);
@@ -125,6 +127,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->co_room.y=prev_room->co_room.y+new_room->height;
         prev_room->door[BOTTOM].track=new_room->room_ID;
         new_room->door[TOP].track=prev_room->room_ID;
+        initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[TOP].location);
         break;
     default:
         break;
@@ -167,7 +170,7 @@ int createLeftDoor(MAP *map, ROOM *room){
             room->doors++;
             room->door[LEFT].closed=1;
             room->door[LEFT].location='l';
-            room->data[room->door[LEFT].gap_y][0]='d'; // (DANGER)
+            room->data[room->door[LEFT].gap_y][0]='d';
             return 1; // success
         }
     }
@@ -397,6 +400,11 @@ void Display_room(PLAYER *player, MAP *map, int room_ID, char location){
     int width = map->room[room_ID].width;
     int height = map->room[room_ID].height;
     int ch;
+    if (!map->room[room_ID].data) {
+        printw("disp error\n");
+        refresh();
+        exit(-5);
+    }
     while (1) { // Boucle de jeu
         display_room_view(player, map, width, height, room_ID); // vision 11x11 (dans gen.h modifiable)
         ch = getch(); //prend un charactère
