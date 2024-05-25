@@ -40,6 +40,7 @@ MAP *create_map();
 ROOM *create_room(MAP *map);
 void get_random_room_size(MAP *map, ROOM *room);
 void initRoom(MAP *map, ROOM *room, int height, int width);
+void initDoor(MAP *map, ROOM *room, int i, int j);
 void display_room(MAP* map, ROOM *room, int height, int width);
 
 ///////////////////////////////////////////////////////////////////////////////////////
@@ -56,44 +57,39 @@ int main(void){
     MAP *map = create_map();
     ROOM *room = create_room(map);
 
+
+
     gameloop(map,room);
-    
+    free(room);
     free(map->room);
     free(map);
-    free(room);
+    
 
     endwin();
     exit(EXIT_SUCCESS);
-}
-
-int give_seed(){
-    system("clear");
-    
-        int seed; 
-    do{
-        char buffer[MAX_CHAR];
-        printw("Type your number ");
-        getstr(buffer);
-        seed = strtol(buffer, NULL, 10);
-        clear();
-        if(seed == 0){
-            printw("Write a number and seed = 0 doesn't exist\n");
-        }
-    }while(seed == 0);
-
-    return seed;
 }
 
 void gameloop(MAP *map, ROOM *room){
     int ch;
     do{
         clear();
+
+        if((room[map->roomID].explored == 1) && (map->roomID == 0)){
         initRoom(map, room, room[map->roomID].height, room[map->roomID].width);
         display_room(map, room, room[map->roomID].height, room[map->roomID].width);
-        mvprintw(room[map->roomID].height, 0,"(%d, %d), current_room : %d", room[map->roomID].height, room[map->roomID].width, map->roomID);
-        map->roomID++;
-        room = create_room(map);
+        mvprintw(room[map->roomID].height, 0, "la salle est explorée %d", room[map->roomID].explored);
+        }
+        else if(map->roomID != 0){
+            room = create_room(map);
+            initRoom(map, room, room[map->roomID].height, room[map->roomID].width);
+            display_room(map, room, room[map->roomID].height, room[map->roomID].width);
+            mvprintw(room[map->roomID].height, 0, "la salle est explorée %d", room[map->roomID].explored);
+            map->roomID;
+        
+        }
 
+        // mvprintw(room[map->roomID].height + 1, 0,"(%d, %d), current_room : %d", room[map->roomID].height, room[map->roomID].width, map->roomID);
+        
     }while((ch = getch()) != 27);
 }
 
@@ -107,7 +103,7 @@ MAP *create_map() {
     if(map == NULL){
         perror("memory allocation error for the map\n");
     }
-    GetMaxRoom(map);
+    map->max_room = GetMaxRoom(map);
     printw("The map contain %d max room", map->max_room);
     map->room = (ROOM*)malloc(sizeof(ROOM) * map->max_room);
     if(map->room == NULL){
@@ -127,12 +123,11 @@ ROOM *create_room(MAP *map){
     if(map->roomID == 0){
         room[map->roomID].height = MAX_HEIGHT_ROOM;
         room[map->roomID].width = MAX_WIDTH_ROOM;
+        room[map->roomID].explored = 1;
     }
     else{
         get_random_room_size(map, room);
     }
-
-    room->explored = 0;
     return room;
 }
 
@@ -146,7 +141,10 @@ void initRoom(MAP *map, ROOM *room, int height, int width){
     for (int i = 0; i < height; i++) {
         room->data[i] = (char *)malloc(width * sizeof(char));
         for (int j = 0; j < width; j++) {
-            if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
+            if((j == 0 && i == height/2) || (j == width/2 && i == height - 1) || (i == 0 && j == width/2) || (i == height/2 && j == width - 1)){
+                 initDoor(map, room, i, j);
+            }
+            else if (i == 0 || i == height - 1 || j == 0 || j == width - 1) {
                 room[map->roomID].data[i][j] = '#'; // Borders
             } else {
                 room[map->roomID].data[i][j] = ' '; // Empty space
@@ -155,11 +153,11 @@ void initRoom(MAP *map, ROOM *room, int height, int width){
     }
 }
 
-// void initDoor(MAP *map, ROOM *room, int height, int width){
-//     if(map->roomID = 0){
-//         room[]
-//     }
-// }
+void initDoor(MAP *map, ROOM *room, int i, int j){
+    if((map->roomID == 0) && (map->roomID == 0)){
+        room[map->roomID].data[i][j] = 'd';
+    }
+}
 
 void display_room(MAP* map, ROOM *room, int height, int width){
     for (int i = 0; i < height; i++){
@@ -169,4 +167,22 @@ void display_room(MAP* map, ROOM *room, int height, int width){
         printw("\n");
     }
     refresh();
+}
+
+int give_seed(){
+    system("clear");
+    
+        int seed; 
+    do{
+        char buffer[MAX_CHAR];
+        printw("Type your number ");
+        getstr(buffer);
+        seed = strtol(buffer, NULL, 10);
+        clear();
+        if(seed == 0){
+            printw("Write a number and seed = 0 doesn't exist\n");
+        }
+    }while(seed == 0);
+
+    return seed;
 }
