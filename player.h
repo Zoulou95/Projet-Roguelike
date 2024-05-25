@@ -4,6 +4,6 @@
 
 void move_player(PLAYER *player, MAP *map, int ch);
 int find_player_room(MAP *map, PLAYER *player);
-void teleport(PLAYER *player, MAP *map, int room_ID, char location);
+void teleport(PLAYER *player, MAP *map, char location);
 
 #endif
