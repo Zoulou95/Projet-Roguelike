@@ -16,20 +16,16 @@ int find_player_room(MAP *map, PLAYER *player) {
 void teleport(PLAYER *player, MAP *map, int room_ID, char location){
     switch(location){
     case 'l':
-        player->y=map->room[room_ID].door[LEFT].co_door.y;
-        player->x=map->room[room_ID].door[LEFT].co_door.x-2;
+        player->x=map->room[room_ID].co_room.x-2;
         break;
     case 'r':
-        player->y=map->room[room_ID].door[RIGHT].co_door.y;
-        player->x=map->room[room_ID].door[RIGHT].co_door.x+2;
+        player->x=map->room[room_ID].co_room.x+2;
         break;
     case 't':
-        player->y=map->room[room_ID].door[TOP].co_door.y-2;
-        player->x=map->room[room_ID].door[TOP].co_door.x;
+        player->y=map->room[room_ID].co_room.y-2;
         break;
     case 'b':
-        player->y=map->room[room_ID].door[BOTTOM].co_door.y+2;
-        player->x=map->room[room_ID].door[BOTTOM].co_door.x;
+        player->y=map->room[room_ID].co_room.y+2;
         break;
     default:
         break;
@@ -61,7 +57,7 @@ void move_player(PLAYER *player, MAP *map, int ch) {
     if (new_x >= room->co_room.x && new_x < room->co_room.x+room->width && new_y >= room->co_room.y && new_y < room->co_room.y+room->height) {
         if (room->data[new_y][new_x] == 'd') {
             for(int i=0; i<MAX_DOOR; i++){
-                if(room->door[i].co_door.x==new_x && room->door[i].co_door.y==new_y){
+                if(room->door[i].gap+room->co_room.x==new_x && room->door[i].gap+room->co_room.y==new_y){
                     if(room->door[i].closed==0){
                         teleport(player, map, map->room[player->current_room].room_ID, room->door[i].location);
                         player->current_room=find_player_room(map, player);
