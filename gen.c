@@ -2,16 +2,23 @@
 #include"menu.h"
 #include"struct.h"
 
+void give_seed(){
+    echo();
+    system("clear");
+        int seed; 
+    do{
+        char buffer[MAX_CHAR];
+        printw("Type your number ");
+        getstr(buffer);
+        seed = strtol(buffer, NULL, 10);
+        clear();
+        if(seed == 0){
+            printw("Seed can only contain numbers (except 0)\n");
+        }
+    }while(seed == 0);
 
-// void give_seed(int *seed) { // scanf for the seed
-//     echo(); // disable hidden text
-//     char str[100];
-//     printw("Entrez la seed : ");
-//     refresh(); // show text
-//     getstr(str); // read the seed
-//     *seed = atoi(str); // convert everything in int
-//     noecho(); // enable hidden text
-// }
+    srand(seed);
+}
 
 int getMaxRooms(){
     int minthRooms = MIN_ROOM;
@@ -19,10 +26,7 @@ int getMaxRooms(){
     return rand() % (maxthRooms - minthRooms + 1) + minthRooms; // number of rooms
 }
 MAP *create_map(){
-    // int seed;
-    // give_seed(&seed); // ask the seed
-    // srand(seed); // init random on the seed
-    srand(5);
+    give_seed();
     MAP *map = (MAP *)malloc(sizeof(MAP)); // memory allocation for the map
     if (map == NULL) { // security
         perror("Memory allocation error for the map\n");
@@ -43,7 +47,7 @@ MAP *create_map(){
         exit(4);
     }
     player->current_room=0;
-    *Spawn(map);
+    Spawn(map);
     player->y = map->room[0].co_room.y+map->room[0].height / 2; // player spawn at the middle of the spawn
     player->x = map->room[0].co_room.x+map->room[0].width / 2;
     Display_room(player, map, 0); // (MODIF)
@@ -83,7 +87,6 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     new_room->room_ID=map->nb_rooms-1;
     new_room->width=(rand()%(MAX_SIZE_ROOM_WIDTH-MIN_SIZE_ROOM_WIDTH+1))+MIN_SIZE_ROOM_WIDTH;
     new_room->height=(rand()%(MAX_SIZE_ROOM_HEIGHT-MIN_SIZE_ROOM_HEIGHT+1))+MIN_SIZE_ROOM_HEIGHT;
-    int gap; // variable for the position of the door in the wall
     switch (location){ // create the position of the room depending of previous room and door location
     case 'l': // new room location at the left and first door initialized
         new_room->door[RIGHT].gap_y=1+rand()%(new_room->height-2);
@@ -91,7 +94,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->door[RIGHT].closed=0;
         new_room->door[RIGHT].location='r';
         new_room->co_room.x=prev_room->co_room.x-new_room->width;
-        new_room->co_room.y=prev_room->co_room.y+prev_room->door[LEFT].gap_y-gap;
+        new_room->co_room.y=prev_room->co_room.y+prev_room->door[LEFT].gap_y-new_room->door[RIGHT].gap_y;
         prev_room->door[LEFT].track=new_room->room_ID;
         new_room->door[RIGHT].track=prev_room->room_ID;
         initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[RIGHT].location);
@@ -102,7 +105,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->door[LEFT].closed=0;
         new_room->door[LEFT].location='l';
         new_room->co_room.x=prev_room->co_room.x+prev_room->width;
-        new_room->co_room.y=prev_room->co_room.y+prev_room->door[RIGHT].gap_y-gap;
+        new_room->co_room.y=prev_room->co_room.y+prev_room->door[RIGHT].gap_y-new_room->door[LEFT].gap_y;
         prev_room->door[RIGHT].track=new_room->room_ID;
         new_room->door[LEFT].track=prev_room->room_ID;
         initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[LEFT].location);
@@ -112,7 +115,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->door[BOTTOM].gap_y=0;
         new_room->door[BOTTOM].closed=0;
         new_room->door[BOTTOM].location='b';
-        new_room->co_room.x=prev_room->co_room.x+prev_room->door[TOP].gap_x-gap;
+        new_room->co_room.x=prev_room->co_room.x+prev_room->door[TOP].gap_x-new_room->door[BOTTOM].gap_x;
         new_room->co_room.y=prev_room->co_room.y-new_room->height;
         prev_room->door[TOP].track=new_room->room_ID;
         new_room->door[BOTTOM].track=prev_room->room_ID;
@@ -123,7 +126,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->door[TOP].gap_y=0;
         new_room->door[TOP].closed=0;
         new_room->door[TOP].location='t';
-        new_room->co_room.x=prev_room->co_room.x+prev_room->door[BOTTOM].gap_x-gap;
+        new_room->co_room.x=prev_room->co_room.x+prev_room->door[BOTTOM].gap_x-new_room->door[TOP].gap_x;
         new_room->co_room.y=prev_room->co_room.y+new_room->height;
         prev_room->door[BOTTOM].track=new_room->room_ID;
         new_room->door[TOP].track=prev_room->room_ID;
@@ -132,7 +135,6 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     default:
         break;
     }
-    map->room[new_room->room_ID]=*new_room;
     return new_room;
 }
 
@@ -277,7 +279,7 @@ void createDoors(MAP *map, ROOM *room, char existing_door){
     }
 }
 
-ROOM *Spawn(MAP *map){ // create the spawn of the map
+void Spawn(MAP *map){ // create the spawn of the map
     ROOM *spawn = &map->room[0];
     spawn->width=MAX_SIZE_ROOM_WIDTH*2-1;
     spawn->height=MAX_SIZE_ROOM_HEIGHT*2-1;
@@ -319,7 +321,6 @@ ROOM *Spawn(MAP *map){ // create the spawn of the map
             break;
         }
     }
-    return spawn;
 }
 
 
@@ -415,7 +416,7 @@ void Display_room(PLAYER *player, MAP *map, int room_ID){
             free(map->room); //libère la mémoire des rooms car plus besoin
             free(map);  //libère la mémoire de la carte
             FICHIER file = create_file(); //recréer un fichier (j'avais la flemme de changer)
-            print_menu(file, 0); //affiche menu
+            print_menu(file); //affiche menu
             break;
         }
     }

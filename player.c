@@ -10,10 +10,14 @@ int find_player_room(MAP *map, PLAYER *player) {
             player->y >= room->co_room.y && player->y < room->co_room.y + room->height) {
             return room->room_ID; // Return the room ID
         }
+        else{
+            exit(EXIT_FAILURE);
+        }
     }
+    return -1;
 }
 
-void teleport(PLAYER *player, MAP *map, char location){
+void teleport(PLAYER *player, char location){
     switch(location){
     case 'l':
         player->x=player->x-3;
@@ -68,25 +72,15 @@ void move_player(PLAYER *player, MAP *map, int ch) {
                 (new_y==room->door[i].gap_y && new_x==0) ||
                 (new_y==room->door[i].gap_y && new_x==width-1)){
                     if(room->door[i].closed==0){
-                        teleport(player, map, room->door[i].location);
+                        teleport(player, room->door[i].location);
                         player->current_room=room->door[i].track;
                         break;
                     }
                     else if(room->door[i].closed==1){
-                        teleport(player, map, room->door[i].location);
-                        if (!map->room[player->current_room].data) {
-                            printw("before\n");
-                            refresh();
-                            exit(-5);
-                        }
+                        teleport(player, room->door[i].location);
                         player->current_room=room->door[i].track;
-                        if (!map->room[player->current_room].data) {
-                            printw("after_\n");
-                            refresh();
-                            exit(-5);
-                        }
                         room->door[i].closed=0;
-                        createDoors(map, &map->room[room->door[i].track], room->door[i].location);
+                        // createDoors(map, &map->room[room->door[i].track], room->door[i].location);
                         Display_room(player, map, room->door[i].track);
                         break;
                     }

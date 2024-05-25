@@ -4,18 +4,17 @@
 
 FICHIER create_file() {
     FICHIER file;
-    file.fp = fopen("menu.txt", "w"); // Ouvrir un fichier en mode écriture
+    file.fp = fopen("menu.txt", "w"); // open a file in writing mode
     if (file.fp == NULL) {
         perror("Erreur lors de l'ouverture du fichier"); 
         exit(-1);
     }
 
-    snprintf(file.menu[0], sizeof(file.menu[0]), "Start Game"); //ça copie colle dans file.menu
-    snprintf(file.menu[1], sizeof(file.menu[1]), "Continue");
-    snprintf(file.menu[2], sizeof(file.menu[2]), "Quit Game");
+    snprintf(file.menu[0], sizeof(file.menu[0]), "Start Game"); // copy and paste in file.menu
+    snprintf(file.menu[1], sizeof(file.menu[1]), "Quit Game");
 
     for (int i = 0; i < maxMenu; ++i) {
-        fprintf(file.fp, "%s\n", file.menu[i]); // écrire dans le fichier
+        fprintf(file.fp, "%s\n", file.menu[i]); // write a file
     }
     return file;
 }
@@ -23,35 +22,33 @@ FICHIER create_file() {
 void choice_menu(int choice){
     if(choice == 0){
         clear();
-        // Créer une carte
-        create_map();
+        create_map(); // create the map
     }
 
-    else if(choice == 2){
+    else if(choice == 1){
 
         endwin();
         exit(EXIT_SUCCESS);
     }
 }
 
-void print_menu(FICHIER file, int choice){ 
-    initscr(); // initialiser ncurses
-    noecho(); // ne pas montrer l'input de l'utilisateur car sans ça sur la fenêtre il y aurait des 'z' et 's' partout
-    cbreak(); // lire les touches immédiatement sans appuyer sur espace
-    curs_set(0); // mettre le curseur en invisible (opacité de 0 à 1)
+void print_menu(FICHIER file){ 
+    initscr(); // init ncurses
+    noecho(); // hide user input
+    cbreak(); // read input key without pressing entre to continue
+    curs_set(0); // set cursor opacity to 0
 
     char ch;
     int arrPos = 0;
     fclose(file.fp);
     refresh();
-    while(1){ // boucle infini car 1 = vrai
+    while(1){ // menu loop
         for(int i = 0; i < maxMenu; i++){
-            if(arrPos == i){ // si la position vaut 1 alors il va attendre jusqu'à que i + 1 = 1 soit i = 0 donc menu[0]
-                move(i, 0); //déplace le curseur de i+1 (y) et 1 (x)
-                attron(A_REVERSE); // début de l'attribut qui permet de renverser la couleur du texte et du background
-                printw("-->%s\n", file.menu[i]); // écrire l'affichage sur la fenêtre avec la flèche
-                attroff(A_REVERSE); // fin de l'attribut qui permet de renverser la couleur du texte et du background
-                refresh(); //rafraichir la fenêtre pour afficher la fenêtre actuelle sinon ça ne s'affiche pas
+            if(arrPos == i){
+                move(i, 0); // arrow menu postion
+                attron(A_REVERSE); // start reverse backround and foreground color
+                printw("-->%s\n", file.menu[i]); // display menu arrow
+                attroff(A_REVERSE); // end reverse backround and foreground color
                 if(ch == 10){
                     choice_menu(i);
                 }
@@ -72,8 +69,8 @@ void print_menu(FICHIER file, int choice){
             break;
         case 's': // le charactère 's' pour aller en haut
             arrPos++; // ajouter de 1 la position car si la flèche est en 1er position après elle sera en 2nd position
-            if(arrPos == 3) // bloquer la position pour ne pas aller en dessous du champs
-                arrPos = 2;
+            if(arrPos == 2) // bloquer la position pour ne pas aller en dessous du champs
+                arrPos = 1;
             break;
         default:
             break;
@@ -101,7 +98,7 @@ void game_loop(PLAYER *player, MAP *map, int room_ID) {
             free(map->room); // Free memory of rooms
             free(map);  // Free memory of the map
             FICHIER file = create_file(); // Recreate a file
-            print_menu(file, 0); // Display menu
+            print_menu(file); // Display menu
             break;
         }
     }

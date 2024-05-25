@@ -1,3 +1,2 @@
 Start Game
-Continue
 Quit Game
