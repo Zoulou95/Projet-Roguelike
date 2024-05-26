@@ -78,31 +78,3 @@ void print_menu(FICHIER file){
         }
     }
 }
-
-// Function to run the main game loop
-void game_loop(PLAYER *player, MAP *map, int room_ID) {
-    int ch;
-    int height = map->room[room_ID].height;
-
-    while (1) { // Game loop
-        display_room_view(player, map); // Display room view
-        ch = getch(); // Take a character input
-        move_player(player, map, ch); // Move the player according to the input character
-        if (ch == 27) { // Escape to quit
-            clear(); // Clear the terminal
-            refresh(); // Refresh the terminal
-            for (int i = 0; i < height; i++) {
-                free(map->room[room_ID].data[i]); // Free memory of room data rows
-            }
-            free(map->room[room_ID].data); // Free memory of room data
-            free(map->room); // Free memory of rooms
-            free(map);  // Free memory of the map
-            FICHIER file = create_file(); // Recreate a file
-            print_menu(file); // Display menu
-            break;
-        }
-    }
-
-    // Terminate ncurses
-    endwin();
-}
