@@ -2,23 +2,23 @@
 #include"menu.h"
 #include"struct.h"
 
-void give_seed(){
-    echo();
-    system("clear");
-        int seed; 
-    do{
-        char buffer[MAX_CHAR];
-        printw("Type your number ");
-        getstr(buffer);
-        seed = strtol(buffer, NULL, 10);
-        clear();
-        if(seed == 0){
-            printw("Seed can only contain numbers (except 0)\n");
-        }
-    }while(seed == 0);
+// void give_seed(){
+//     echo();
+//     system("clear");
+//         int seed; 
+//     do{
+//         char buffer[MAX_CHAR];
+//         printw("Type your number ");
+//         getstr(buffer);
+//         seed = strtol(buffer, NULL, 10);
+//         clear();
+//         if(seed == 0){
+//             printw("Seed can only contain numbers (except 0)\n");
+//         }
+//     }while(seed == 0);
 
-    srand(seed);
-}
+//     srand(seed);
+// }
 
 int getMaxRooms(){
     int minthRooms = MIN_ROOM;
@@ -26,7 +26,8 @@ int getMaxRooms(){
     return rand() % (maxthRooms - minthRooms + 1) + minthRooms; // number of rooms
 }
 MAP *create_map(){
-    give_seed();
+    // give_seed();
+    srand(4);
     MAP *map = (MAP *)malloc(sizeof(MAP)); // memory allocation for the map
     if (map == NULL) { // security
         perror("Memory allocation error for the map\n");
@@ -85,8 +86,10 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     new_room->doors=1;
     map->nb_rooms++;
     new_room->room_ID=map->nb_rooms-1;
-    new_room->width=(rand()%(MAX_SIZE_ROOM_WIDTH-MIN_SIZE_ROOM_WIDTH+1))+MIN_SIZE_ROOM_WIDTH;
-    new_room->height=(rand()%(MAX_SIZE_ROOM_HEIGHT-MIN_SIZE_ROOM_HEIGHT+1))+MIN_SIZE_ROOM_HEIGHT;
+    // new_room->width=(rand()%(MAX_SIZE_ROOM_WIDTH-MIN_SIZE_ROOM_WIDTH+1))+MIN_SIZE_ROOM_WIDTH;
+    new_room->width=MAX_SIZE_ROOM_WIDTH;
+    // new_room->height=(rand()%(MAX_SIZE_ROOM_HEIGHT-MIN_SIZE_ROOM_HEIGHT+1))+MIN_SIZE_ROOM_HEIGHT;
+    new_room->height=MAX_SIZE_ROOM_HEIGHT;
     switch (location){ // create the position of the room depending of previous room and door location
     case 'l': // new room location at the left and first door initialized
         new_room->door[RIGHT].gap_y=1+rand()%(new_room->height-2);
@@ -298,6 +301,7 @@ void Spawn(MAP *map){ // create the spawn of the map
             spawn->door[i].gap_y=spawn->height/2;
             spawn->door[i].gap_x=0;
             createRoom(map, spawn, spawn->door[i].location);
+            
             break;
         case 1: // right
             spawn->door[i].location='r';
