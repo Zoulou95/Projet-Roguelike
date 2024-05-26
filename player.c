@@ -34,6 +34,27 @@ int direction(int dx, int dy){
     return direction;
 }
 
+char invertLocation(char location){
+    switch(location){
+    case 'l':
+        return 'r';
+        break;
+    case 'r':
+        return 'l';
+        break;
+    case 't':
+        return 'b';
+        break;
+    case 'b':
+        return 't';
+        break;    
+    default:
+        perror("Invert location error");
+        exit(EXIT_FAILURE);
+        break;
+    }
+}
+
 void move_player(PLAYER *player, MAP *map, int ch) {
     // player->current_room=find_player_room(map, player);
     ROOM *room = &map->room[player->current_room];
@@ -73,6 +94,8 @@ void move_player(PLAYER *player, MAP *map, int ch) {
             if(room->door[dir].closed==1){
                 map->visited[map->nb_visited]=next_room;
                 map->nb_visited++;
+                room->door[dir].closed=0;
+                createDoors(map, &map->room[next_room], invertLocation(room->door[dir].location));
             }
             teleport(player, dx, dy);
         }

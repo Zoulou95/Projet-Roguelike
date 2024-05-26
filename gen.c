@@ -69,11 +69,11 @@ MAP *create_map(){
 int isSpaceAvailable(MAP *map, ROOM *new_room){
     // Check for collisions with existing rooms
     for (int i = 0; i<map->nb_rooms; i++){ // compare new_room coordinate with an existing one
-        ROOM existingRoom = map->room[i];
-        if (!(new_room->co_room.x + new_room->width <= existingRoom.co_room.x ||
-              new_room->co_room.x >= existingRoom.co_room.x + existingRoom.width || 
-              new_room->co_room.y + new_room->height <= existingRoom.co_room.y || 
-              new_room->co_room.y >= existingRoom.co_room.y + existingRoom.height)){
+        ROOM *existingRoom = &map->room[i];
+        if (!((new_room->co_room.x + new_room->width <= existingRoom->co_room.x) ||
+              (new_room->co_room.x >= existingRoom->co_room.x + existingRoom->width) || 
+              (new_room->co_room.y + new_room->height <= existingRoom->co_room.y) || 
+              (new_room->co_room.y >= existingRoom->co_room.y + existingRoom->height))){
             free(new_room->data); // purge the new_room since it failed
             map->nb_rooms--; // total numbers of rooms -1
             return 0; // false
