@@ -296,8 +296,12 @@ void Spawn(MAP *map){ // create the spawn of the map
     spawn->height=MAX_SIZE_ROOM_HEIGHT*2-1;
     map->nb_rooms=1;
     spawn->room_ID=0;
-    spawn->co_room.x=SPAWN_X;
-    spawn->co_room.y=SPAWN_Y;
+    int term_height, term_width;
+    getmaxyx(stdscr, term_height, term_width);
+    int start_y = (term_height - DISPLAY_HEIGHT) / 2;
+    int start_x = (term_width - DISPLAY_WIDTH) / 2;
+    spawn->co_room.x=start_x;
+    spawn->co_room.y=start_y;
     spawn->doors=MAX_DOOR;
     spawn->explored=1;
     initRoom(map, spawn->room_ID, spawn->height, spawn->width, 0);
@@ -417,7 +421,7 @@ void Display_room(PLAYER *player, MAP *map, int room_ID){
         exit(-5);
     }
     while (1) { // Boucle de jeu
-        display_room_view(player, map, room_ID); // vision 11x11 (dans gen.h modifiable)
+        display_room_view(player, map); // vision 11x11 (dans gen.h modifiable)
         ch = getch(); //prend un charactère
         if (ch == 27) { // escape pour quitter
             clear(); //clear le terminal sinon ça se superpose avec le menu
@@ -435,55 +439,26 @@ void Display_room(PLAYER *player, MAP *map, int room_ID){
     endwin();
 }
 
-
-void display_room_view(PLAYER *player, MAP *map, int room_ID) {
-    // Vérifier si le joueur, la carte ou les données de la pièce sont nuls
-    if (!map->room[room_ID].data) {
-        printw("Error: Invalid map data.\n");
-        refresh();
-        return;
-    }
+void display_room_view(PLAYER *player, MAP *map){
     clear();
-    ROOM *current_room = &map->room[player->current_room];
-
     int term_height, term_width;
     getmaxyx(stdscr, term_height, term_width);
-
     int start_y = (term_height - DISPLAY_HEIGHT) / 2;
     int start_x = (term_width - DISPLAY_WIDTH) / 2;
-    
-
-    int offset_x = player->x - DISPLAY_WIDTH / 2;
-    int offset_y = player->y - DISPLAY_HEIGHT / 2;
-
-    for (int i = 0; i < DISPLAY_HEIGHT; i++) {
-        for (int j = 0; j < DISPLAY_WIDTH; j++) {
-            int global_x = current_room->co_room.x * current_room->width + offset_x + j;
-            int global_y = current_room->co_room.y * current_room->height + offset_y + i;
-
-            char c = ' ';
-            for (int k = 0; k < map->nb_rooms; k++) {
-                ROOM *room = &map->room[k];
-                int local_x = global_x - room->co_room.x * room->width;
-                int local_y = global_y - room->co_room.y * room->height;
-                if (local_x >= 0 && local_x < room->width && local_y >= 0 && local_y < room->height) {
-                    if (local_x == player->x && local_y == player->y && k == player->current_room) {
-                        c = 'P';
-                    } else {
-                        c = room->data[local_y][local_x];
-                    }
-                }
-            }
-            mvprintw(start_y + i, start_x + j, "%c", c);
-            mvprintw(1,1,"%d %d",player->x, player->y);
-            for(int k=0; k<map->nb_visited;k++){
-                mvprintw(2+k, 1, "%d", map->visited[k]);
+    mvprintw(6,1,"%d %d",start_x, start_y);
+    for(int k=0; k<map->nb_visited;k++){
+        mvprintw(2+k, 1, "%d", map->visited[k]);
+        for(int i=0; i<map->room[map->visited[k]].height; i++){
+            for(int j=0; j<map->room[map->visited[k]].width; j++){
+                mvprintw(30, 1, "%d %d",map->room[4].co_room.x, map->room[4].co_room.y);
+                mvprintw(31, 1, "%d %d",map->room[3].co_room.x, map->room[3].co_room.y);
+                mvprintw(map->room[map->visited[k]].co_room.y+i,map->room[map->visited[k]].co_room.x+j, "%c", map->room[map->visited[k]].data[i][j]);
             }
         }
     }
+    mvprintw(player->y,player->x,"%c",'P');
     refresh();
 }
-
 
 // void display_room_view(PLAYER *player, MAP *map, int room_ID) {
 //     // Vérifier si le joueur, la carte ou les données de la pièce sont nuls
@@ -493,33 +468,42 @@ void display_room_view(PLAYER *player, MAP *map, int room_ID) {
 //         return;
 //     }
 //     clear();
-//     ROOM *current_room = &map->room[room_ID];
-//     int width = current_room->width;
-//     int height = current_room->height;
+//     ROOM *current_room = &map->room[player->current_room];
+
+//     int term_height, term_width;
+//     getmaxyx(stdscr, term_height, term_width);
+
+//     int start_y = (term_height - DISPLAY_HEIGHT) / 2;
+//     int start_x = (term_width - DISPLAY_WIDTH) / 2;
+    
 
 //     int offset_x = player->x - DISPLAY_WIDTH / 2;
 //     int offset_y = player->y - DISPLAY_HEIGHT / 2;
 
 //     for (int i = 0; i < DISPLAY_HEIGHT; i++) {
 //         for (int j = 0; j < DISPLAY_WIDTH; j++) {
-//             int y = offset_y + i;
-//             int x = offset_x + j;
-//             if (y >= 0 && y < height && x >= 0 && x < width) {
-//                 if (y == player->y && x == player->x) {
-//                     printw("P"); // Afficher le joueur
-//                 } else {
-//                     // Vérifiez que vous accédez bien à une zone valide de la carte
-//                     if (x >= 0 && x < width && y >= 0 && y < height) {
-//                         printw("%c", current_room->data[y][x]); // Afficher les bordures et les espaces vides
+//             int global_x = current_room->co_room.x * current_room->width + offset_x + j;
+//             int global_y = current_room->co_room.y * current_room->height + offset_y + i;
+
+//             char c = ' ';
+//             for (int k = 0; k < map->nb_rooms; k++) {
+//                 ROOM *room = &map->room[k];
+//                 int local_x = global_x - room->co_room.x * room->width;
+//                 int local_y = global_y - room->co_room.y * room->height;
+//                 if (local_x >= 0 && local_x < room->width && local_y >= 0 && local_y < room->height) {
+//                     if (local_x == player->x && local_y == player->y && k == player->current_room) {
+//                         c = 'P';
 //                     } else {
-//                         printw(" ");
+//                         c = room->data[local_y][local_x];
 //                     }
 //                 }
-//             } else {
-//                 printw(" "); // Afficher un espace pour les cases hors de la salle
 //             }
+//             mvprintw(start_y + i, start_x + j, "%c", c);
+//             mvprintw(1,1,"%d %d",player->x, player->y);
+            // for(int k=0; k<map->nb_visited;k++){
+            //     mvprintw(2+k, 1, "%d", map->visited[k]);
+            // }
 //         }
-//         printw("\n");
 //     }
-//     refresh(); // Rafraîchir l'affichage
+//     refresh();
 // }
