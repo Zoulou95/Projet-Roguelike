@@ -1,5 +1,7 @@
 # Projet-Roguelike
 
+Grp MI-3 tri-J
+
 To run the program, in the bash, run the following command:
 make run
 
