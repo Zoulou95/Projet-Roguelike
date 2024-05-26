@@ -10,12 +10,12 @@ int find_player_room(MAP *map, PLAYER *player) {
         // Check that the player's coordinates are within the room limits
         if (player->x >= room->co_room.x && player->x < room->co_room.x + room->width &&
             player->y >= room->co_room.y && player->y < room->co_room.y + room->height) {
-            // Retourner l'ID de la pièce si le joueur s'y trouve
+            // Return room ID if player is in room
             return room->room_ID;
         }
     }
-    // return -1 if the player is not in any room
-    return -1;
+    // return 1 if the player is not in any room
+    return 1;
 }
 
 // Function to teleport the player a certain distance in a given direction
