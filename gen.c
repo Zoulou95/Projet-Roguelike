@@ -2,7 +2,7 @@
 #include"menu.h"
 #include"struct.h"
 
-void give_seed(){
+void give_seed(){ // ask the seed
     echo();
     system("clear");
         int seed; 
@@ -30,43 +30,44 @@ MAP *create_map(){
     MAP *map = (MAP *)malloc(sizeof(MAP)); // memory allocation for the map
     if (map == NULL) { // security
         perror("Memory allocation error for the map\n");
-        exit(2);
+        exit(EXIT_FAILURE);
     }
     map->max_room = getMaxRooms(); // max_room
     map->room = (ROOM *)malloc(sizeof(ROOM) * map->max_room); // memory allocation for the table of rooms
     if (map->room == NULL) { // security
         perror("Memory allocation error for the map rooms\n");
         free(map);
-        exit(3);
+        exit(EXIT_FAILURE);
     }
-    map->visited=(int *)malloc(sizeof(int *)*map->max_room);
+    map->visited=(int *)malloc(sizeof(int *)*map->max_room); // memory allocation for the visited rooms
     if (map->visited == NULL) { // security
         perror("Memory allocation error for the map visited\n");
         free(map);
-        exit(3);
+        exit(EXIT_FAILURE);
     }
     map->visited[0]=0;
     map->nb_visited=1;
-    PLAYER *player = (PLAYER *)malloc(sizeof(PLAYER));  // Initialize player
-    if (player == NULL) {
+    PLAYER *player = (PLAYER *)malloc(sizeof(PLAYER));  // initialize player
+    if (player == NULL) { // security
         perror("Memory allocation error for player\n");
         free(map->room);
         free(map);
-        exit(4);
+        exit(EXIT_FAILURE);
     }
     player->current_room=0;
-    Spawn(map);
-    player->y = map->room[0].co_room.y+map->room[0].height / 2; // player spawn at the middle of the spawn
+    Spawn(map); // init the spawn
+    // player spawn at the middle of the spawn
+    player->y = map->room[0].co_room.y+map->room[0].height / 2;
     player->x = map->room[0].co_room.x+map->room[0].width / 2;
-    Display_room(player, map, 0);
+    Display_room(player, map, 0); // display the spawn
     
     return map;
 }
 
-int isSpaceAvailable(MAP *map, ROOM *new_room){
-    // Check for collisions with existing rooms
-    for (int i = 0; i<map->nb_rooms-1; i++){ // compare new_room coordinate with an existing one
+int isSpaceAvailable(MAP *map, ROOM *new_room){ // function to verify if rooms overlap
+    for (int i = 0; i<map->nb_rooms-1; i++){ // compare new_room coordinate with all existing room
         ROOM *existingRoom = &map->room[i];
+        // in case of overlap, free the new room
         if (!((new_room->co_room.x + new_room->width <= existingRoom->co_room.x) ||
               (new_room->co_room.x >= existingRoom->co_room.x + existingRoom->width) || 
               (new_room->co_room.y + new_room->height <= existingRoom->co_room.y) || 
@@ -79,32 +80,38 @@ int isSpaceAvailable(MAP *map, ROOM *new_room){
     return 1; // true
 }
 
-ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
+ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // preload a room
     ROOM *new_room=&map->room[map->nb_rooms]; // memory allocation for the new room
     if (new_room==NULL) { // security
         perror("Memory allocation error for the new room\n");
-        exit(5);
+        exit(EXIT_FAILURE);
     }
-    for(int i=0; i<MAX_DOOR; i++){ // init doors ID to -1
+    for(int i=0; i<MAX_DOOR; i++){ // init doors ID to -1 and the door path to -1 (it doesn't exist for now)
         new_room->door[i].closed=-1;
         new_room->door[i].track=-1;
     }
-    new_room->explored=0;
-    new_room->doors=1;
+    new_room->explored=0; // the room is not explored
+    new_room->doors=1; // 1 door for door of entry
     map->nb_rooms++;
-    new_room->room_ID=map->nb_rooms-1;
-    new_room->width=(rand()%(MAX_SIZE_ROOM_WIDTH-MIN_SIZE_ROOM_WIDTH+1))+MIN_SIZE_ROOM_WIDTH;
-    new_room->height=(rand()%(MAX_SIZE_ROOM_HEIGHT-MIN_SIZE_ROOM_HEIGHT+1))+MIN_SIZE_ROOM_HEIGHT;
+    new_room->room_ID=map->nb_rooms-1; // new room, room_ID
+    new_room->width=(rand()%(MAX_SIZE_ROOM_WIDTH-MIN_SIZE_ROOM_WIDTH+1))+MIN_SIZE_ROOM_WIDTH; // random new room width
+    new_room->height=(rand()%(MAX_SIZE_ROOM_HEIGHT-MIN_SIZE_ROOM_HEIGHT+1))+MIN_SIZE_ROOM_HEIGHT; // random new room height
     switch (location){ // create the position of the room depending of previous room and door location
+    // the door gap is the distance from the wall to randomise it
     case 'l': // new room location at the left and first door initialized
-        new_room->door[RIGHT].gap_y=1+rand()%(new_room->height-2);
+        // the right door position in the wall
+        new_room->door[RIGHT].gap_y=1+rand()%(new_room->height-2); 
         new_room->door[RIGHT].gap_x=0;
+
         new_room->door[RIGHT].closed=0;
         new_room->door[RIGHT].location='r';
+        // new room coordinates
         new_room->co_room.x=prev_room->co_room.x-new_room->width;
         new_room->co_room.y=prev_room->co_room.y+prev_room->door[LEFT].gap_y-new_room->door[RIGHT].gap_y;
+        // door path (where it lead to -> room_ID)
         prev_room->door[LEFT].track=new_room->room_ID;
         new_room->door[RIGHT].track=prev_room->room_ID;
+        // create in the room data the future to display characters
         initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[RIGHT].location);
         break;
     case 'r': // new room location at the right and first door initialized
@@ -146,45 +153,48 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     return new_room;
 }
 
-int numberOfDoors(MAP *map){ // probability to create a new door
+int numberOfDoors(MAP *map){ // number of doors to be created
+    // probability to create a new door depending of the number of total rooms
     switch (map->max_room-map->nb_rooms){
     case 0:
-        return 0;
+        return 0; // no doors created
         break;
     case 1:
-        return rand()%2;
+        return rand()%2; // 0 to 1 door created
         break;
     case 2:
-        return rand()%3;
+        return rand()%3; // 0 to 2 doors created
     default:
+        // if there is a lot of rooms to be created, probability to have more doors increase
         if(map->nb_rooms<=(map->max_room)/3){
-            return 2+rand()%2;
+            return 2+rand()%2; // 0 to 3 doors created
         }
         else if((map->nb_rooms<=(map->max_room)/2)&&(map->nb_rooms>(map->max_room)/3)){
-            return 1+rand()%3;
+            return 1+rand()%3; // 1 to 3 doors created
         }
         else{
-            return rand()%4;
+            return rand()%4; // 0 to 3 doors created
         }
         break;
     }
 }
 
-int createLeftDoor(MAP *map, ROOM *room){
+int createLeftDoor(MAP *map, ROOM *room){ // create the left door of a room
+    // random position in the wall
     room->door[LEFT].gap_y=1+rand()%(room->height-2);
     room->door[LEFT].gap_x=0;
     ROOM *new_room;
-    for(int i=0; i<CHECK; i++){
-        new_room=createRoom(map, room, 'l');
+    for(int i=0; i<CHECK; i++){ // if the room can't be created to it a certain number of time (CHECK times)
+        new_room=createRoom(map, room, 'l'); // create a room behind the door
         if(isSpaceAvailable(map, new_room)){
             room->doors++;
             room->door[LEFT].closed=1;
             room->door[LEFT].location='l';
             room->data[room->door[LEFT].gap_y][0]='d';
-            return 1; // success
+            return 1; // success in case the room behind the door can be created
         }
     }
-    return 0; // failure
+    return 0; // failure in case the room behind the door can't be created (no left door)
 }
 int createRightDoor(MAP *map, ROOM *room){
     room->door[RIGHT].gap_y=1+rand()%(room->height-2);
@@ -235,10 +245,10 @@ int createBottomDoor(MAP *map, ROOM *room){
     return 0; // failure
 }
 
-void createDoors(MAP *map, ROOM *room, char existing_door){
+void createDoors(MAP *map, ROOM *room, char existing_door){ // create new doors for a room
     int nb_doors=numberOfDoors(map);
-    char possible_doors[]={'l', 'r', 't', 'b'};
-    char new_doors[4]={0};
+    char possible_doors[]={'l', 'r', 't', 'b'}; // all possible doors
+    char new_doors[4]={0}; // tab for the future new doors postion
     for (int i=0; i<MAX_DOOR; i++){ // delete the existing door from the possible doors
         if (possible_doors[i]==existing_door){
             possible_doors[i]=0;
@@ -292,19 +302,22 @@ void Spawn(MAP *map){ // create the spawn of the map
     spawn->width=MAX_SIZE_ROOM_WIDTH*2-1;
     spawn->height=MAX_SIZE_ROOM_HEIGHT*2-1;
     map->nb_rooms=1;
-    spawn->room_ID=0;
+    spawn->room_ID=0; // room_ID of 0 for the spawn
     int term_height, term_width;
-    getmaxyx(stdscr, term_height, term_width);
+    getmaxyx(stdscr, term_height, term_width); // get terminal height and width
+    // starting point of the spawn (top be located at the center of the terminal)
     int start_y = (term_height - DISPLAY_HEIGHT) / 2;
     int start_x = (term_width - DISPLAY_WIDTH) / 2;
     spawn->co_room.x=start_x;
     spawn->co_room.y=start_y;
     spawn->doors=MAX_DOOR;
-    spawn->explored=1;
+    spawn->explored=1; // spawn is explored
+    // init the characters for the spawn
     initRoom(map, spawn->room_ID, spawn->height, spawn->width, 0);
     for(int i=0; i<MAX_DOOR; i++){
-        spawn->door[i].closed=1;
+        spawn->door[i].closed=1; // all doors are closed
         switch(i){ // create the 4 doors for the spawn
+        // all doors are at the middle of each walls of the spawn
         case 0: // left
             spawn->door[i].location='l';
             spawn->door[i].gap_y=spawn->height/2;
@@ -337,24 +350,24 @@ void Spawn(MAP *map){ // create the spawn of the map
 }
 
 
-void initRoom(MAP *map, int room_ID, int height, int width, char location){
-    map->room[room_ID].data = (char **)malloc(height * sizeof(char *));
-    if (map->room[room_ID].data == NULL){
+void initRoom(MAP *map, int room_ID, int height, int width, char location){ // init the data of a room
+    map->room[room_ID].data = (char **)malloc(height * sizeof(char *)); // memory allocation for data[y]
+    if (map->room[room_ID].data == NULL){ // security
         perror("Memory allocation error for spawn data");
         exit(EXIT_FAILURE);
     }
-    for (int i = 0; i < height; i++) {
+    for (int i = 0; i < height; i++) { // memory allocation for data[y][x]
         map->room[room_ID].data[i] = (char *)malloc(width * sizeof(char));
-        if (map->room[room_ID].data[i] == NULL) {
+        if (map->room[room_ID].data[i] == NULL) { // security
             perror("Memory allocation error for row data");
-            // Free previously allocated memory before exiting
+            // Free previously allocated memory before exiting in case of failure
             for (int k = 0; k < i; k++) {
                 free(map->room[room_ID].data[k]);
             }
             free(map->room[room_ID].data);
             exit(EXIT_FAILURE);
         }
-        for (int j = 0; j < width; j++) {
+        for (int j = 0; j < width; j++) { // set all characters of the room to blank space
             map->room[room_ID].data[i][j] = ' ';
         }
     }
@@ -368,7 +381,7 @@ void initRoom(MAP *map, int room_ID, int height, int width, char location){
                     map->room[room_ID].data[y][x] = 'd';
                 }
                 else if (y == 0 || y == height-1 || x == 0 || x == width-1){
-                    map->room[room_ID].data[y][x] = '#';// room borders
+                    map->room[room_ID].data[y][x] = '#';// room borders (walls)
                 }
                 else {
                     map->room[room_ID].data[y][x] = ' '; // blank space in the room
@@ -376,18 +389,18 @@ void initRoom(MAP *map, int room_ID, int height, int width, char location){
             }
         }
     }
-    else if (room_ID>0){ // init when no overlay failure
+    else if (room_ID>0){ // init a room
         for (int y=0; y < height; y++){
             for (int x=0; x < width; x++) { //
                 if (y == 0 || y == height-1 || x == 0 || x == width-1){
-                    map->room[room_ID].data[y][x] = '#';// room borders
+                    map->room[room_ID].data[y][x] = '#';// room borders (walls)
                 }
                 else {
                     map->room[room_ID].data[y][x] = ' '; // blank space in the room
                 }
             }
         }
-        switch(location){
+        switch(location){ // created the door of entry of a room
         case 'l':
             map->room[room_ID].data[map->room[room_ID].door[LEFT].gap_y][0] = 'd';
             break;
@@ -413,20 +426,20 @@ void initRoom(MAP *map, int room_ID, int height, int width, char location){
 
 void Display_room(PLAYER *player, MAP *map, int room_ID){
     int ch;
-    if (!map->room[room_ID].data) {
-        printw("disp error\n");
+    if (!map->room[room_ID].data){ // security
+        printw("Display error\n");
         refresh();
-        exit(-5);
+        exit(EXIT_FAILURE);
     }
     while (1) { // Game loop
-        display_room_view(player, map); // vision 11x11 (modifiable in gen.h)
+        display_room_view(player, map); // display the visited rooms and modify player view
         ch = getch(); // get a character
         if (ch == 27) { // escape to quit
             clear(); // clear the terminal to avoid overlay with the menu
             refresh(); // refresh the terminal
             free(map->room); // free the memory of rooms as they are no longer needed
             free(map);  // free the memory of the map
-            FICHIER file = create_file(); // recreate a file (too lazy to change)
+            FICHIER file = create_file(); // recreate a file
             print_menu(file); // display menu
             break;
         }
@@ -438,10 +451,10 @@ void Display_room(PLAYER *player, MAP *map, int room_ID){
 }
 
 void display_room_view(PLAYER *player, MAP *map) {
-    int vision_radius = 10; // Radius for the 11x11 vision area
-    int display_width = 2 * vision_radius + 1; // 11
-    int display_height = 2 * vision_radius + 1; // 11
-
+    // player vision area
+    int vision_radius = 10; 
+    int display_width = 2 * vision_radius + 1;
+    int display_height = 2 * vision_radius + 1;
     int start_y = player->y - vision_radius;
     int end_y = player->y + vision_radius;
     int start_x = player->x - vision_radius;
@@ -449,11 +462,13 @@ void display_room_view(PLAYER *player, MAP *map) {
 
     int term_rows, term_cols;
     getmaxyx(stdscr, term_rows, term_cols); // Get the terminal size
-
+    
+    // player at the center of the terminal
     int offset_x = (term_cols - display_width) / 2;
     int offset_y = (term_rows - display_height) / 2;
 
     clear();
+    // loop to show all visited door within the player view
     for (int k = 0; k < map->nb_visited; k++) {
         ROOM *room = &map->room[map->visited[k]];
         for (int i = 0; i < room->height; i++) {

@@ -2,6 +2,7 @@
 #include "gen.h"
 #include "struct.h"
 
+// Function to create a file and write the menu to it
 FICHIER create_file() {
     FICHIER file;
     file.fp = fopen("menu.txt", "w"); // open a file in writing mode
@@ -14,24 +15,26 @@ FICHIER create_file() {
     snprintf(file.menu[1], sizeof(file.menu[1]), "Quit Game");
 
     for (int i = 0; i < maxMenu; ++i) {
-        fprintf(file.fp, "%s\n", file.menu[i]); // write a file
+        fprintf(file.fp, "%s\n", file.menu[i]); 
+    //Write each menu item to the file
     }
     return file;
 }
-
+// Function to manage menu selection
 void choice_menu(int choice){
-    if(choice == 0){
-        clear();
+    if(choice == 0){// If the user chooses "Start Game"
+        clear();// Clean the screen
         create_map(); // create the map
     }
 
-    else if(choice == 1){
+    else if(choice == 1){// If the user chooses "Quit Game"
 
         endwin();
-        exit(EXIT_SUCCESS);
+        exit(EXIT_SUCCESS);//quit the program
     }
 }
 
+// Function to display the menu
 void print_menu(FICHIER file){ 
     initscr(); // init ncurses
     noecho(); // hide user input
@@ -40,8 +43,8 @@ void print_menu(FICHIER file){
 
     char ch;
     int arrPos = 0;
-    fclose(file.fp);
-    refresh();
+    fclose(file.fp);// Close File
+    refresh();// Refresh the screen
     while(1){ // menu loop
         for(int i = 0; i < maxMenu; i++){
             if(arrPos == i){
@@ -49,27 +52,27 @@ void print_menu(FICHIER file){
                 attron(A_REVERSE); // start reverse backround and foreground color
                 printw("-->%s\n", file.menu[i]); // display menu arrow
                 attroff(A_REVERSE); // end reverse backround and foreground color
-                if(ch == 10){
+                if(ch == 10){ //If the user presses Enter
                     choice_menu(i);
                 }
             }
             else {
                 move(i, 0);
-                printw("   %s\n", file.menu[i]);// même chose qu'au dessus mais sans la flèche
+                printw("   %s\n", file.menu[i]);// Move the cursor to the menu position
                 printw("Press Z to go top or Press S to go down.");
                 refresh();
             }
         }
-        ch = getch(); // avoir la touche de l'utilisateur
-        switch (ch){ // switch case pour le charactère
-        case 'z': // le charactère 'z' pour aller en haut
-            arrPos--; // enlever de 1 la position car si la flèche est en 2nd position après elle sera en 1er position
-            if(arrPos == -1) // bloquer la position pour ne pas aller au dessus du champs
+        ch = getch(); // Get User key
+        switch (ch){
+        case 'z': // up
+            arrPos--;
+            if(arrPos == -1) // Prevent the position from going beyond the first element
                 arrPos = 0;
             break;
-        case 's': // le charactère 's' pour aller en haut
-            arrPos++; // ajouter de 1 la position car si la flèche est en 1er position après elle sera en 2nd position
-            if(arrPos == 2) // bloquer la position pour ne pas aller en dessous du champs
+        case 's': // down
+            arrPos++; 
+            if(arrPos == 2) // Prevent the position from going beyond the last element
                 arrPos = 1;
             break;
         default:
