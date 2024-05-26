@@ -37,6 +37,7 @@ void print_menu(FICHIER file){
     noecho(); // hide user input
     cbreak(); // read input key without pressing entre to continue
     curs_set(0); // set cursor opacity to 0
+    keypad(stdscr, 1);
 
     char ch;
     int arrPos = 0;

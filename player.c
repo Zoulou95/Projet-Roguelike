@@ -63,19 +63,19 @@ void move_player(PLAYER *player, MAP *map, int ch) {
     int dx=0, dy=0;
 
     switch (ch) {
-        case 'z':
+        case KEY_UP:
             new_y--;
             dy=-1;
             break;
-        case 's':
+        case KEY_DOWN:
             new_y++;
             dy=+1;
             break;
-        case 'q':
+        case KEY_LEFT:
             new_x--;
             dx=-1;
             break;
-        case 'd':
+        case KEY_RIGHT:
             new_x++;
             dx=+1;
             break;
