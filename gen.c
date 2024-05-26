@@ -59,6 +59,8 @@ MAP *create_map(){
     Spawn(map);
     player->y = map->room[0].co_room.y+map->room[0].height / 2; // player spawn at the middle of the spawn
     player->x = map->room[0].co_room.x+map->room[0].width / 2;
+    int x=map->room[4].co_room.x;
+    int y=map->room[4].co_room.y;
     Display_room(player, map, 0); // (MODIF)
     
     return map;
@@ -138,7 +140,7 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
         new_room->door[TOP].closed=0;
         new_room->door[TOP].location='t';
         new_room->co_room.x=prev_room->co_room.x+prev_room->door[BOTTOM].gap_x-new_room->door[TOP].gap_x;
-        new_room->co_room.y=prev_room->co_room.y+new_room->height;
+        new_room->co_room.y=prev_room->co_room.y+prev_room->height;
         prev_room->door[BOTTOM].track=new_room->room_ID;
         new_room->door[TOP].track=prev_room->room_ID;
         initRoom(map, new_room->room_ID, new_room->height, new_room->width, new_room->door[TOP].location);
