@@ -1,32 +1,42 @@
-# Compiler to use
+# Compiler
 CC = gcc
 
-# Compiler flags
-CFLAGS = -Wall -g
+# Options de compilation
+CFLAGS = -Wall -Wextra -pedantic -std=c11
 
-# Target executable
-TARGET = exe
+# Bibliothèques à lier
+LIBS = -lncurses
 
-# Source files
-SRCS = gen.c main.c menu.c player.c
+# Nom de l'exécutable
+TARGET = dungeon
 
-# Object files (replace .c with .o)
+# Fichiers source
+SRCS = main.c player.c gen.c menu.c
+
+# Fichiers objets (générés à partir des fichiers source)
 OBJS = $(SRCS:.c=.o)
 
-# Default rule
+# Règle par défaut (ce qui est exécuté lorsque vous tapez `make`)
 all: $(TARGET)
 
-# Rule to link object files to create the executable
+# Comment construire l'exécutable
 $(TARGET): $(OBJS)
-	$(CC) $(CFLAGS) -o $(TARGET) $(OBJS)
+	$(CC) $(OBJS) -o $(TARGET) $(LIBS)
 
-# Rule to compile source files into object files
+# Comment compiler les fichiers .c en fichiers .o
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-# Clean rule to remove generated files
+# Règle pour nettoyer les fichiers générés
 clean:
-	rm -f $(TARGET) $(OBJS)
+	rm -f $(OBJS) $(TARGET)
 
-# Phony targets to avoid conflicts with files named 'all' or 'clean'
-.PHONY: all clean
+# Règle pour tout nettoyer, y compris les fichiers de sauvegarde (~) et les fichiers temporaires
+distclean: clean
+	rm -f *~
+
+run: $(TARGET)
+	./$(TARGET)
+
+# Phony targets
+.PHONY: all clean distclean

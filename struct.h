@@ -19,8 +19,9 @@
 #define SPAWN_Y 0
 #define MAX_ROOM 20
 #define MIN_ROOM 15
-#define maxMenu 3
+#define maxMenu 2
 #define CHECK 10
+#define MAX_CHAR 50
 
 typedef struct{ // structure for coordinates
     int x;

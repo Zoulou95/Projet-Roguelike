@@ -5,8 +5,7 @@
 
 int main() {
     FICHIER file = create_file();
-    int choice = 0;
-    print_menu(file, choice);
+    print_menu(file);
     void game_loop(PLAYER *player, MAP *map, int room_ID);
 
     exit(EXIT_SUCCESS);
