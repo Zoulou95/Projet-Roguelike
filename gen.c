@@ -412,6 +412,23 @@ void initRoom(MAP *map, int room_ID, int height, int width, char location){
     }
 }
 
+void Time_over(MAP *map){
+    // End the game if time is up
+    timeout(-1);
+    clear();
+    mvprintw(0, 0, "Time's up! Game over.");
+    refresh();
+    napms(2000);  // Wait for 2 seconds before ending the game
+    free(map->room); //libère la mémoire des rooms car plus besoin
+    free(map);  //libère la mémoire de la carte
+    FICHIER file = create_file(); //recréer un fichier
+    print_menu(file); //affiche menu
+}
+
+void display_time(int time_left){
+    mvprintw(0, 0, "Time: %d seconds\n", time_left);
+}
+
 void Display_room(PLAYER *player, MAP *map, int room_ID){
     int ch;
     if (!map->room[room_ID].data) {
@@ -419,8 +436,12 @@ void Display_room(PLAYER *player, MAP *map, int room_ID){
         refresh();
         exit(-5);
     }
+    int time_left = 10000;  // Countdown time in seconds
+    time_t last_time = time(NULL); //struct for using time and calculate
+    timeout(0); //execute the time without waiting
     while (1) { // Boucle de jeu
-        display_room_view(player, map); // vision 11x11 (dans gen.h modifiable)
+        display_room_view(player, map); // display the room
+        display_time(time_left); // display time
         ch = getch(); //prend un charactère
         if (ch == 27) { // escape pour quitter
             clear(); //clear le terminal sinon ça se superpose avec le menu
@@ -432,6 +453,14 @@ void Display_room(PLAYER *player, MAP *map, int room_ID){
             break;
         }
         move_player(player, map, ch); // déplace le joueur avec la charactère
+        time_t current_time = time(NULL);
+        if (current_time != last_time) {
+            time_left--;
+            last_time = current_time;
+        }
+        if(time_left <= 0){
+            Time_over(map);
+        }
     }
 
     // Terminer ncurses
@@ -439,7 +468,6 @@ void Display_room(PLAYER *player, MAP *map, int room_ID){
 }
 
 void display_room_view(PLAYER *player, MAP *map){
-    clear();
     for(int k=0; k<map->nb_visited;k++){
         for(int i=0; i<map->room[map->visited[k]].height; i++){
             for(int j=0; j<map->room[map->visited[k]].width; j++){
