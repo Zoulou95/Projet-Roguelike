@@ -40,6 +40,14 @@ MAP *create_map(){
         free(map);
         exit(3);
     }
+    map->visited=(int *)malloc(sizeof(int *)*map->max_room);
+    if (map->visited == NULL) { // security
+        perror("Memory allocation error for the map visited\n");
+        free(map);
+        exit(3);
+    }
+    map->visited[0]=0;
+    map->nb_visited=1;
     PLAYER *player = (PLAYER *)malloc(sizeof(PLAYER));  // Initialize player
     if (player == NULL) {
         perror("Memory allocation error for player\n");
@@ -468,6 +476,9 @@ void display_room_view(PLAYER *player, MAP *map, int room_ID) {
             }
             mvprintw(start_y + i, start_x + j, "%c", c);
             mvprintw(1,1,"%d %d",player->x, player->y);
+            for(int k=0; k<map->nb_visited;k++){
+                mvprintw(2+k, 1, "%d", map->visited[k]);
+            }
         }
     }
     refresh();

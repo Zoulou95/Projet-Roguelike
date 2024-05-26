@@ -70,6 +70,8 @@ void move_player(PLAYER *player, MAP *map, int ch) {
             int next_room=room->door[dir].track;
             player->current_room=room->door[dir].track;
             if(room->door[dir].closed==1){
+                map->visited[map->nb_visited]=map->room[next_room].room_ID;
+                map->nb_visited++;
                 Display_room(player, map, next_room);
             }
             teleport(player, dx, dy);

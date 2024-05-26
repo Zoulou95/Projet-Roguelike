@@ -52,6 +52,8 @@ typedef struct{
 typedef struct{
     int max_room;
     int nb_rooms;
+    int nb_visited;
+    int *visited;
     ROOM *room;
 }MAP;
 
