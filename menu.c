@@ -84,7 +84,7 @@ void game_loop(PLAYER *player, MAP *map, int room_ID) {
     int height = map->room[room_ID].height;
 
     while (1) { // Game loop
-        display_room_view(player, map, room_ID); // Display room view
+        display_room_view(player, map); // Display room view
         ch = getch(); // Take a character input
         move_player(player, map, ch); // Move the player according to the input character
         if (ch == 27) { // Escape to quit
