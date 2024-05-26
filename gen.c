@@ -467,14 +467,47 @@ void Display_room(PLAYER *player, MAP *map, int room_ID){
     endwin();
 }
 
-void display_room_view(PLAYER *player, MAP *map){
-    for(int k=0; k<map->nb_visited;k++){
-        for(int i=0; i<map->room[map->visited[k]].height; i++){
-            for(int j=0; j<map->room[map->visited[k]].width; j++){
-                mvprintw(map->room[map->visited[k]].co_room.y+i,map->room[map->visited[k]].co_room.x+j, "%c", map->room[map->visited[k]].data[i][j]);
+void display_room_view(PLAYER *player, MAP *map) {
+    int term_height, term_width;
+    getmaxyx(stdscr, term_height, term_width); // Get the terminal dimensions
+    int vision_radius = 5; // Radius for the 11x11 vision area
+    int vision_diameter = vision_radius * 2 + 1;
+    
+    // Center positions in the terminal
+    int center_y = term_height / 2;
+    int center_x = term_width / 2;
+    
+    // The top-left corner of the vision area in the map
+    int start_y = player->y - vision_radius;
+    int start_x = player->x - vision_radius;
+    
+    clear();
+    for (int k = 0; k < map->nb_visited; k++) {
+        ROOM *room = &map->room[map->visited[k]];
+        for (int i = 0; i < room->height; i++) {
+            for (int j = 0; j < room->width; j++) {
+                int map_y = room->co_room.y + i;
+                int map_x = room->co_room.x + j;
+
+                // Check if the position is within the player's vision area
+                if (map_y >= start_y && map_y < start_y + vision_diameter && 
+                    map_x >= start_x && map_x < start_x + vision_diameter) {
+                    
+                    // Calculate the screen position relative to the terminal center
+                    int screen_y = center_y + (map_y - player->y);
+                    int screen_x = center_x + (map_x - player->x);
+
+                    // Ensure the position is within the terminal bounds
+                    if (screen_y >= 0 && screen_y < term_height && 
+                        screen_x >= 0 && screen_x < term_width) {
+                        mvprintw(screen_y, screen_x, "%c", room->data[i][j]);
+                    }
+                }
             }
         }
     }
-    mvprintw(player->y,player->x,"%c",'P');
+
+    // Ensure the player character is displayed in the correct position
+    mvprintw(center_y, center_x, "%c", 'P');
     refresh();
 }
