@@ -1,0 +1,82 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <math.h>
+
+typedef struct { //structure that defines the monster's characteristics 
+    int x, y;
+    int health;
+    int attack;
+} MONSTER;
+
+typedef struct { //structure that defines player characteristics 
+    int x, y;
+    int current_room;
+    int health;
+    int lvl;
+    int exp;
+    int attack;
+} PLAYER;
+
+MONSTER create_monster() {//creates and initializes a monster
+    MONSTER m;
+    m.health = 60; 
+    m.attack = 10;
+    return m; 
+} 
+
+PLAYER create_player() {// creates and initializes a player and the level is calculated on the basis of exp   
+    PLAYER p;
+    p.health = 100;
+    p.exp = 1;
+    int count;
+    p.lvl = 0;
+    p.attack = 10; 
+    count = 1;
+        p.lvl = log(p.exp * p.exp);
+        p.exp += 1;
+        count++;
+    return p;
+}
+
+void level_up(PLAYER *p) { //This function allows the player to level up. The level is calculated from experience, and if the level has changed, the player's attack and health are increased. The new values are then displayed.
+    int level1;
+    level1=p->lvl;
+    p->exp += 1;
+    p->lvl = log(p->exp * p->exp);
+    if(level1!= p->lvl){
+    p->attack += 15;
+    p->health +=20;
+    }
+    printf("New level: %d, Attack: %d, Health: %d\n", p->lvl, p->attack, p->health);
+}
+
+int main() { //The function initializes a player and a monster, then there's a loop where player and monster battle until one of them is dead. The player can choose to continue the fight by pressing 'd', or to quit the game by pressing 'q'. After each round of combat, the player's and monster's remaining hit points are displayed.
+    PLAYER p = create_player();
+    MONSTER m = create_monster();
+    char input;
+    
+printf("Press 'd' to continue the fight or 'q' to qut: ");
+    while (m.health > 0 || p.health > 0 ) {
+    
+        scanf(" %s", &input); 
+
+      if (input == 'q') {
+         printf("Quitting the game.\n");
+         exit(1);
+    } else if (input == 'd') {
+            m.health -= p.attack;
+            p.health -= m.attack;
+            if (m.health <= 0) {
+                printf("Monster killed\n");
+                level_up(&p);
+        }else {
+                printf("Monster health: %d\n", m.health);
+                printf("Player health: %d\n",p.health);
+}
+} else {
+            printf("Invalid input. Please press 'd' to fight or 'q' to quit.\n");
+}
+ }
+    return 0;
+}
