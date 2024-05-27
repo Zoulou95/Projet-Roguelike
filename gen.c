@@ -65,9 +65,9 @@ MAP *create_map(){
 
 int isSpaceAvailable(MAP *map, ROOM *new_room){
     // Check for collisions with existing rooms
-    for (int i = 0; i<map->nb_rooms; i++){ // compare new_room coordinate with an existing one
+    for (int i = 0; i<map->nb_rooms-1; i++){ // compare new_room coordinate with an existing one
         ROOM *existingRoom = &map->room[i];
-        if (((new_room->co_room.x + new_room->width <= existingRoom->co_room.x) ||
+        if (!((new_room->co_room.x + new_room->width <= existingRoom->co_room.x) ||
               (new_room->co_room.x >= existingRoom->co_room.x + existingRoom->width) || 
               (new_room->co_room.y + new_room->height <= existingRoom->co_room.y) || 
               (new_room->co_room.y >= existingRoom->co_room.y + existingRoom->height))){
@@ -93,10 +93,8 @@ ROOM *createRoom(MAP *map, ROOM *prev_room, char location){ // create a room
     new_room->doors=1;
     map->nb_rooms++;
     new_room->room_ID=map->nb_rooms-1;
-    // new_room->width=(rand()%(MAX_SIZE_ROOM_WIDTH-MIN_SIZE_ROOM_WIDTH+1))+MIN_SIZE_ROOM_WIDTH;
-    new_room->width=MAX_SIZE_ROOM_WIDTH;
-    // new_room->height=(rand()%(MAX_SIZE_ROOM_HEIGHT-MIN_SIZE_ROOM_HEIGHT+1))+MIN_SIZE_ROOM_HEIGHT;
-    new_room->height=MAX_SIZE_ROOM_HEIGHT;
+    new_room->width=(rand()%(MAX_SIZE_ROOM_WIDTH-MIN_SIZE_ROOM_WIDTH+1))+MIN_SIZE_ROOM_WIDTH;
+    new_room->height=(rand()%(MAX_SIZE_ROOM_HEIGHT-MIN_SIZE_ROOM_HEIGHT+1))+MIN_SIZE_ROOM_HEIGHT;
     switch (location){ // create the position of the room depending of previous room and door location
     case 'l': // new room location at the left and first door initialized
         new_room->door[RIGHT].gap_y=1+rand()%(new_room->height-2);
@@ -412,6 +410,7 @@ void initRoom(MAP *map, int room_ID, int height, int width, char location){
     }
 }
 
+
 void Display_room(PLAYER *player, MAP *map, int room_ID){
     int ch;
     if (!map->room[room_ID].data) {
@@ -419,34 +418,57 @@ void Display_room(PLAYER *player, MAP *map, int room_ID){
         refresh();
         exit(-5);
     }
-    while (1) { // Boucle de jeu
-        display_room_view(player, map); // vision 11x11 (dans gen.h modifiable)
-        ch = getch(); //prend un charactère
-        if (ch == 27) { // escape pour quitter
-            clear(); //clear le terminal sinon ça se superpose avec le menu
-            refresh(); //rafraîchit le terminal sinon ça change pas
-            free(map->room); //libère la mémoire des rooms car plus besoin
-            free(map);  //libère la mémoire de la carte
-            FICHIER file = create_file(); //recréer un fichier (j'avais la flemme de changer)
-            print_menu(file); //affiche menu
+    while (1) { // Game loop
+        display_room_view(player, map); // vision 11x11 (modifiable in gen.h)
+        ch = getch(); // get a character
+        if (ch == 27) { // escape to quit
+            clear(); // clear the terminal to avoid overlay with the menu
+            refresh(); // refresh the terminal
+            free(map->room); // free the memory of rooms as they are no longer needed
+            free(map);  // free the memory of the map
+            FICHIER file = create_file(); // recreate a file (too lazy to change)
+            print_menu(file); // display menu
             break;
         }
-        move_player(player, map, ch); // déplace le joueur avec la charactère
+        move_player(player, map, ch); // move the player with the character
     }
 
-    // Terminer ncurses
+    // End ncurses
     endwin();
 }
 
-void display_room_view(PLAYER *player, MAP *map){
+void display_room_view(PLAYER *player, MAP *map) {
+    int vision_radius = 10; // Radius for the 11x11 vision area
+    int display_width = 2 * vision_radius + 1; // 11
+    int display_height = 2 * vision_radius + 1; // 11
+
+    int start_y = player->y - vision_radius;
+    int end_y = player->y + vision_radius;
+    int start_x = player->x - vision_radius;
+    int end_x = player->x + vision_radius;
+
+    int term_rows, term_cols;
+    getmaxyx(stdscr, term_rows, term_cols); // Get the terminal size
+
+    int offset_x = (term_cols - display_width) / 2;
+    int offset_y = (term_rows - display_height) / 2;
+
     clear();
-    for(int k=0; k<map->nb_visited;k++){
-        for(int i=0; i<map->room[map->visited[k]].height; i++){
-            for(int j=0; j<map->room[map->visited[k]].width; j++){
-                mvprintw(map->room[map->visited[k]].co_room.y+i,map->room[map->visited[k]].co_room.x+j, "%c", map->room[map->visited[k]].data[i][j]);
+    for (int k = 0; k < map->nb_visited; k++) {
+        ROOM *room = &map->room[map->visited[k]];
+        for (int i = 0; i < room->height; i++) {
+            for (int j = 0; j < room->width; j++) {
+                int screen_y = room->co_room.y + i;
+                int screen_x = room->co_room.x + j;
+                // Check if the position is within the player's vision area
+                if (screen_y >= start_y && screen_y <= end_y && screen_x >= start_x && screen_x <= end_x) {
+                    mvprintw(screen_y - start_y + offset_y, screen_x - start_x + offset_x, "%c", room->data[i][j]);
+                }
             }
         }
     }
-    mvprintw(player->y,player->x,"%c",'P');
+
+    // Ensure the player character is displayed in the correct position
+    mvprintw(offset_y + vision_radius, offset_x + vision_radius, "%c", 'P');
     refresh();
 }

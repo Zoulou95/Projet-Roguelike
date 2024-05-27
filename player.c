@@ -104,35 +104,4 @@ void move_player(PLAYER *player, MAP *map, int ch) {
             player->y=new_y;
         }
     }
-
-
-    // if (new_x >= 0 && new_x < width && new_y >= 0 && new_y < height) {
-    //     if (room->data[new_y][new_x] == 'd') {
-    //         for(int i=0; i<MAX_DOOR; i++){
-    //             if((new_y==0 && new_x==room->door[i].gap_x) ||
-    //             (new_y==height-1 && new_x==room->door[i].gap_x) ||
-    //             (new_y==room->door[i].gap_y && new_x==0) ||
-    //             (new_y==room->door[i].gap_y && new_x==width-1)){
-    //                 if(room->door[i].closed==0){
-    //                     teleport(player, dx, dy);
-    //                     player->current_room=room->door[i].track;
-    //                     break;
-    //                 }
-    //                 else if(room->door[i].closed==1){
-    //                     teleport(player, dx, dy);
-    //                     player->current_room=room->door[i].track;
-    //                     room->door[i].closed=0;
-    //                     // createDoors(map, &map->room[room->door[i].track], room->door[i].location);
-    //                     Display_room(player, map, room->door[i].track);
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     else if (room->data[new_y][new_x] != '#') {
-    //         // Move player within the same room
-    //         player->x = new_x;
-    //         player->y = new_y;
-    //     }
-    // }
 }
